@@ -1,0 +1,76 @@
+/* Layout */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Login Screen */
+.login-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  margin-top: var(--spacing-md);
+  gap: var(--spacing-sm);
+}
+
+.input-group input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Character Sheet Grid */
+.character-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .sheet-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-container {
+    padding: var(--spacing-sm);
+  }
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  .inventory-grid {
+    grid-template-columns: 1fr; /* Stack on mobile */
+  }
+}
+
+.skills-column, .main-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}

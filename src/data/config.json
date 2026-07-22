@@ -1,0 +1,13 @@
+{
+  "scoring": {
+    "endorsementBoost": 10
+  },
+  "globalTitles": [
+    { "minScore": 0, "maxScore": 49, "title": "Aspirant" },
+    { "minScore": 50, "maxScore": 149, "title": "Artisan numérique" },
+    { "minScore": 150, "maxScore": 299, "title": "Bâtisseur" },
+    { "minScore": 300, "maxScore": 499, "title": "Architecte" },
+    { "minScore": 500, "maxScore": 799, "title": "Expert reconnu" },
+    { "minScore": 800, "maxScore": 99999, "title": "Virtuose du multimédia" }
+  ]
+}

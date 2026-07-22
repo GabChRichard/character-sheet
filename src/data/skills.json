@@ -1,0 +1,72 @@
+{
+  "web": {
+    "id": "web",
+    "label": "Web",
+    "icon": "🌐",
+    "courses": ["Web 1", "Web 2", "Web 3", "Web 5"],
+    "description": "Création d'interfaces web, intégration front-end, développement interactif et déploiement."
+  },
+  "animation": {
+    "id": "animation",
+    "label": "Animation",
+    "icon": "🎬",
+    "courses": ["Animation 2D", "Animation 3D"],
+    "description": "Principes d'animation, mouvement, et production d'animations vectorielles ou tramées."
+  },
+  "modelisation3d": {
+    "id": "modelisation3d",
+    "label": "3D",
+    "icon": "🧊",
+    "courses": ["Modélisation 3D", "Animation 3D"],
+    "description": "Création de modèles tridimensionnels, textures, éclairage et rendu 3D."
+  },
+  "designGraphique": {
+    "id": "designGraphique",
+    "label": "Design graphique",
+    "icon": "🎨",
+    "courses": ["Design graphique"],
+    "description": "Composition visuelle, typographie, identité graphique et mise en page."
+  },
+  "imageNumerique": {
+    "id": "imageNumerique",
+    "label": "Image numérique",
+    "icon": "📷",
+    "courses": ["Photographie", "Illustration numérique"],
+    "description": "Captation photographique, retouche, illustration et traitement de l'image fixe."
+  },
+  "video": {
+    "id": "video",
+    "label": "Vidéo",
+    "icon": "📹",
+    "courses": ["Vidéo 1", "Vidéo 2"],
+    "description": "Captation, montage, étalonnage et post-production vidéo."
+  },
+  "conceptionSonore": {
+    "id": "conceptionSonore",
+    "label": "Conception sonore",
+    "icon": "🎵",
+    "courses": ["Audio 1"],
+    "description": "Enregistrement, mixage, sound design et intégration audio dans des productions multimédias."
+  },
+  "programmation": {
+    "id": "programmation",
+    "label": "Programmation",
+    "icon": "💻",
+    "courses": ["Programmation interactive", "Interactivité ludique", "Objets interactifs"],
+    "description": "Développement d'expériences interactives, jeux, interfaces physiques et logique de programmation."
+  },
+  "installationInteractive": {
+    "id": "installationInteractive",
+    "label": "Installation interactive",
+    "icon": "🏛️",
+    "courses": ["Œuvres et dispositifs multimédias en exposition", "Installation multimédia", "Expérience multimédia"],
+    "description": "Conception et déploiement d'œuvres immersives, d'installations physiques et d'expériences en espace public ou muséal."
+  },
+  "redaction": {
+    "id": "redaction",
+    "label": "Rédaction",
+    "icon": "✍️",
+    "courses": ["Domaines multimédias", "Conception d'une expérience multimédia", "Préparation au milieu de travail"],
+    "description": "Rédaction de contenus écrits pour des productions multimédias : scripts, synopsis, textes web, narration et documentation."
+  }
+}

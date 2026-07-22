@@ -1,0 +1,29 @@
+[
+  {
+    "year": 1,
+    "courses": [
+      { "id": "ANIM101", "name": "Animation 2D", "skills": ["animation2d3d", "conception"] },
+      { "id": "WEB101", "name": "Intégration Web 1", "skills": ["web", "programmation"] },
+      { "id": "PROG101", "name": "Programmation interactive", "skills": ["programmation"] },
+      { "id": "VID101", "name": "Traitement de la vidéo", "skills": ["video", "conceptionSonore"] },
+      { "id": "DES101", "name": "Design et typographie", "skills": ["designGraphique", "creation"] }
+    ]
+  },
+  {
+    "year": 2,
+    "courses": [
+      { "id": "ANIM201", "name": "Animation 3D", "skills": ["animation2d3d"] },
+      { "id": "WEB201", "name": "Programmation Web 2", "skills": ["web", "programmation"] },
+      { "id": "JEU201", "name": "Création de jeu", "skills": ["jeuInteractif", "conception"] },
+      { "id": "SND201", "name": "Création sonore", "skills": ["conceptionSonore", "creation"] }
+    ]
+  },
+  {
+    "year": 3,
+    "courses": [
+      { "id": "INST301", "name": "Installation multimédia", "skills": ["installation", "conception", "realisation"] },
+      { "id": "VR301", "name": "Réalité mixte", "skills": ["realiteMixte", "prog_avancee"] },
+      { "id": "PROJ301", "name": "Projet de fin d'études", "skills": ["realisation", "conception", "creation"] }
+    ]
+  }
+]

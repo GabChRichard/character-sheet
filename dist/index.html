@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="parchment">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feuille de Personnage — Multimédia</title>
+    <meta name="description" content="Fiche de progression étudiante du département multimédia. Consultez vos compétences revendiquées, projets et badges." />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/character-sheet/assets/main-Ck9r80yq.js"></script>
+    <link rel="modulepreload" crossorigin href="/character-sheet/assets/badges-DbbjW1Ca.js">
+    <link rel="stylesheet" crossorigin href="/character-sheet/assets/main-C6GdDSG-.css">
+  </head>
+  <body>
+    <div id="app">
+
+      <!-- ====== ÉCRAN DE CONNEXION ====== -->
+      <section id="login-screen" class="login-screen">
+        <div class="login-box">
+          <div class="login-logo">🎓</div>
+          <h1>Feuille de Personnage</h1>
+          <p>Connectez-vous pour accéder à votre profil.</p>
+          <form id="login-form" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <input type="hidden" id="student-code-input" />
+            <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+              <label for="login-code" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">Code étudiant</label>
+              <input type="text" id="login-code" placeholder="Ex : STU-7f3a9b" required autocomplete="username" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius); font-family: var(--font-main); width: 100%;" />
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+              <label for="login-password" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">Mot de passe</label>
+              <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius); font-family: var(--font-main); width: 100%;" />
+            </div>
+            <button type="submit" id="login-btn" class="btn primary" style="justify-content: center; width: 100%; margin-top: 10px;">Se connecter</button>
+          </form>
+          <div id="login-error" class="error-msg hidden">Code ou mot de passe incorrect.</div>
+        </div>
+      </section>
+
+      <!-- ====== FICHE DE PERSONNAGE ====== -->
+      <div id="character-sheet" class="sheet-container hidden">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+          <div class="app-title">🏰 Fiche de Personnage</div>
+          <div class="top-actions">
+            <button class="btn icon-btn" data-theme-target="parchment" title="Thème Parchemin">🏰</button>
+            <button class="btn icon-btn" data-theme-target="cyber" title="Thème Cyber">🌐</button>
+            <button class="btn icon-btn" data-theme-target="minimal" title="Thème Minimal">🎨</button>
+            <button class="btn icon-btn" id="export-pdf-btn" title="Exporter en PDF">📄</button>
+            <button class="btn icon-btn" id="student-logout-btn" title="Se déconnecter" style="margin-left: 10px;">🚪</button>
+          </div>
+        </div>
+
+        <!-- LAYOUT : SIDEBAR + MAIN -->
+        <div class="sheet-layout">
+
+          <!-- SIDEBAR -->
+          <aside class="sidebar">
+
+            <!-- Profil -->
+            <div class="panel profile-panel">
+              <div class="profile-header">
+                <div class="avatar" id="student-avatar">🧙‍♂️</div>
+                <h1 class="alias">
+                  <span id="student-alias">Alias</span>
+                  <button class="btn icon-btn" id="edit-profile-btn" title="Éditer le profil" style="font-size: 1rem;">✏️</button>
+                </h1>
+                <p class="bio" id="student-bio"></p>
+                <div class="tags" id="student-interests"></div>
+              </div>
+
+              <!-- Niveau global -->
+              <div class="level-card">
+                <div class="level-title" id="student-global-title">Aspirant</div>
+                <div class="level-bar-bg">
+                  <div class="level-bar-fill" id="score-fill" style="width: 0%"></div>
+                </div>
+                <div class="level-score"><span id="current-score">0</span> points</div>
+              </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="panel">
+              <h2>Badges & Savoir-être</h2>
+              <div class="badges-grid" id="badges-grid">
+                <!-- Badges générés ici -->
+              </div>
+            </div>
+
+            <!-- Endossements (Trouver un pair) -->
+            <div class="panel">
+              <h2>Endosser un pair</h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez le code secret d'un autre étudiant pour voir ses compétences et l'endosser.</p>
+              <div class="input-group">
+                <input type="text" id="peer-code-input" placeholder="Ex: STU-987654" />
+                <button id="search-peer-btn" class="btn secondary">Chercher</button>
+              </div>
+              <div id="peer-result" class="hidden" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                <h3 id="peer-alias" style="font-size: 1rem; margin-bottom: 10px;">Alias</h3>
+                <div id="peer-skills-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              </div>
+            </div>
+
+          </aside>
+
+          <!-- MAIN CONTENT -->
+          <main class="main-content">
+
+            <!-- Compétences -->
+            <div class="panel">
+              <h2>Compétences Revendiquées</h2>
+              <div id="skills-list-container">
+                <!-- Compétences générées ici -->
+              </div>
+            </div>
+
+            <!-- Projets -->
+            <div class="panel">
+              <div class="section-header">
+                <h2>Inventaire Projets <span class="counter">(<span id="project-count">0</span>/5)</span></h2>
+                <button class="btn secondary" id="add-project-btn">+ Ajouter</button>
+              </div>
+              <div class="projects-grid" id="inventory-grid">
+                <!-- Projets générés ici -->
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ====== MODAL PROJET ====== -->
+    <div id="project-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modal-title">Ajouter un projet</h2>
+        <form id="project-form">
+          <input type="hidden" id="proj-id" />
+          <div class="form-group">
+            <label for="proj-name">Nom du projet</label>
+            <input type="text" id="proj-name" required />
+          </div>
+          <div class="form-group">
+            <label for="proj-desc">Description courte</label>
+            <textarea id="proj-desc" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="proj-course">Cours associé</label>
+            <input type="text" id="proj-course" placeholder="Ex : Design Graphique II" />
+          </div>
+          <div class="form-group">
+            <label>Compétences mobilisées <small>(Preuves pour vos claims)</small></label>
+            <div class="skills-checkboxes" id="proj-skills-checkboxes">
+              <!-- Checkboxes générées dynamiquement -->
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="proj-link">Lien (URL)</label>
+            <input type="url" id="proj-link" placeholder="https://" />
+          </div>
+          <button type="submit" class="btn primary">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ====== MODAL PROFIL ====== -->
+    <div id="profile-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal close-profile-modal">&times;</span>
+        <h2>Éditer le profil</h2>
+        <form id="profile-form">
+          <div class="form-group">
+            <label for="prof-alias">Nom d'utilisateur (Alias)</label>
+            <input type="text" id="prof-alias" required />
+          </div>
+          <div class="form-group">
+            <label for="prof-bio">Bio courte</label>
+            <textarea id="prof-bio" rows="3" placeholder="Quelques mots sur vos intérêts..."></textarea>
+          </div>
+          <button type="submit" class="btn primary">Enregistrer</button>
+        </form>
+      </div>
+    </div>
+
+  </body>
+</html>

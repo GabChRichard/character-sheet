@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup V4 - Fiche Étudiant</title>
+    <style>
+        :root {
+            --bg-color: #f9f5ed;
+            --surface-color: #f0e6d2;
+            --border-color: #d8c8b0;
+            --text-main: #362e29;
+            --text-muted: #6b5c53;
+            --accent-color: #b34726;
+            --accent-hover: #9c3c1e;
+            --success-color: #2d7a3e;
+            --warning-color: #b8860b;
+            --radius: 8px;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-title: 'Georgia', serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        .panel {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-title);
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* --- Profile --- */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #dcd0ba;
+            margin: 0 auto 12px;
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        .alias {
+            font-size: 1.5rem;
+            margin: 0 0 4px 0;
+            font-family: var(--font-title);
+        }
+        .bio {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* --- Global Level --- */
+        .level-card {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(179, 71, 38, 0.05) 0%, rgba(179, 71, 38, 0.15) 100%);
+            border: 1px solid var(--accent-color);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+        .level-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .level-bar-bg {
+            background-color: #dcd0ba;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .level-bar-fill {
+            background-color: var(--accent-color);
+            height: 100%;
+            width: 65%; /* Simulation */
+        }
+        .level-score {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Skills --- */
+        .skill-item {
+            display: grid;
+            grid-template-columns: 24px 140px 100px 90px 90px 40px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border-color);
+            gap: 12px;
+        }
+        .skill-item:last-child {
+            border-bottom: none;
+        }
+        .skill-icon {
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .skill-name {
+            font-weight: 500;
+        }
+        .skill-blocks {
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+        .skill-blocks .empty {
+            color: #d8c8b0;
+        }
+        .skill-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .skill-status {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-valid { color: var(--success-color); font-weight: bold; }
+        .status-warn { color: var(--warning-color); font-weight: bold; }
+        
+        .skill-endorsements {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #e6dac3;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .skill-top {
+            color: #d4af37; /* Gold */
+            font-size: 1rem;
+        }
+
+        /* --- Projects --- */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .project-card {
+            background-color: #fcf9f2;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            position: relative;
+        }
+        .project-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .project-course {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .project-value {
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            font-size: 1.2rem;
+        }
+        .project-valid-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: var(--success-color);
+            background: rgba(45, 122, 62, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* --- Badges --- */
+        .badge-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .badge {
+            width: 50px;
+            height: 50px;
+            background-color: #e6dac3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border: 2px solid var(--border-color);
+            position: relative;
+            cursor: help;
+        }
+        .badge:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-main);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <!-- Profil -->
+        <div class="panel">
+            <div class="profile-header">
+                <div class="avatar">🧙‍♂️</div>
+                <h1 class="alias">Alex LeGris</h1>
+                <p class="bio">"Créateur d'univers numériques, passionné de 3D et d'interfaces interactives."</p>
+            </div>
+            
+            <!-- Global Level -->
+            <div class="level-card">
+                <div class="level-title">Bâtisseur</div>
+                <div class="level-bar-bg">
+                    <div class="level-bar-fill"></div>
+                </div>
+                <div class="level-score">2850 / 4499 points</div>
+            </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="panel">
+            <h2>Badges</h2>
+            <div class="badge-grid">
+                <div class="badge" title="Brise-glace">🧊</div>
+                <div class="badge" title="Tome du savoir">📚</div>
+                <div class="badge" title="Niveau d'expérience 1">⭐</div>
+                <div class="badge" style="opacity: 0.3; filter: grayscale(1);" title="Pilier de la communauté (Non débloqué)">🏛️</div>
+                <div class="badge" style="opacity: 0.3; filter: grayscale(1);" title="Sentinelle (Non débloqué)">👁️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Compétences (Claims) -->
+        <div class="panel">
+            <h2>Compétences Revendiquées</h2>
+            
+            <div class="skill-item">
+                <div class="skill-icon">🎬</div>
+                <div class="skill-name">Animation 2D-3D</div>
+                <div class="skill-blocks">███<span class="empty">░</span></div>
+                <div class="skill-title">Maître</div>
+                <div class="skill-status status-valid">✅ validé</div>
+                <div class="skill-endorsements">👍 7</div>
+                <div class="skill-top" title="Compétence la plus endossée">★</div>
+            </div>
+            
+            <div class="skill-item">
+                <div class="skill-icon">🌐</div>
+                <div class="skill-name">Web</div>
+                <div class="skill-blocks">██<span class="empty">░░</span></div>
+                <div class="skill-title">Expert</div>
+                <div class="skill-status status-valid">✅ validé</div>
+                <div class="skill-endorsements">👍 2</div>
+                <div></div>
+            </div>
+
+            <div class="skill-item">
+                <div class="skill-icon">💻</div>
+                <div class="skill-name">Programmation</div>
+                <div class="skill-blocks">█<span class="empty">░░░</span></div>
+                <div class="skill-title">Initié</div>
+                <div class="skill-status status-warn">⚠️ à valider</div>
+                <div class="skill-endorsements">👍 1</div>
+                <div></div>
+            </div>
+
+            <div class="skill-item">
+                <div class="skill-icon">🎨</div>
+                <div class="skill-name">Design graphique</div>
+                <div class="skill-blocks">████</div>
+                <div class="skill-title">Légende</div>
+                <div class="skill-status status-valid">✅ validé</div>
+                <div class="skill-endorsements">👍 5</div>
+                <div></div>
+            </div>
+
+            <div class="skill-item" style="opacity: 0.6;">
+                <div class="skill-icon">🎵</div>
+                <div class="skill-name">Conception sonore</div>
+                <div class="skill-blocks"><span class="empty">░░░░</span></div>
+                <div class="skill-title">Non-initié</div>
+                <div class="skill-status"></div>
+                <div class="skill-endorsements" style="opacity: 0.5;">👍 0</div>
+                <div></div>
+            </div>
+        </div>
+
+        <!-- Projets (Inventaire) -->
+        <div class="panel">
+            <h2>Inventaire Projets (3/5)</h2>
+            <div class="projects-grid">
+                
+                <div class="project-card">
+                    <div class="project-valid-icon" title="Sert de preuve pour Animation 2D-3D et Web">✅ Preuve</div>
+                    <div class="project-name">Portfolio Interactif 3D</div>
+                    <div class="project-course">Projet de fin de semestre</div>
+                    <div class="project-value" title="Valeur additive : 3 compétences">●●●</div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-valid-icon" title="Sert de preuve pour Design graphique">✅ Preuve</div>
+                    <div class="project-name">Affiche Festival</div>
+                    <div class="project-course">Design Graphique II</div>
+                    <div class="project-value" title="Valeur additive : 2 compétences">●●</div>
+                </div>
+
+                <div class="project-card">
+                    <div class="project-name">Proto Game Jam</div>
+                    <div class="project-course">Projet personnel</div>
+                    <div class="project-value" title="Valeur additive : 1 compétence">●</div>
+                </div>
+                
+                <div class="project-card" style="border: 2px dashed var(--border-color); background: transparent; display: flex; align-items: center; justify-content: center; color: var(--text-muted); min-height: 100px;">
+                    + Ajouter un projet
+                </div>
+                
+                <div class="project-card" style="border: 2px dashed var(--border-color); background: transparent; display: flex; align-items: center; justify-content: center; color: var(--text-muted); min-height: 100px;">
+                    + Ajouter un projet
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

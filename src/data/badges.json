@@ -1,0 +1,17 @@
+{
+  "general": [
+    { "id": "ambassadeur", "name": "Ambassadeur·rice", "description": "A représenté le programme aux portes ouvertes ou lors d'événements externes", "icon": "🎺", "grantedBy": "prof" },
+    { "id": "contributeur", "name": "Contributeur·rice", "description": "A participé activement à la vie du comité étudiant", "icon": "🏛️", "grantedBy": "comite" },
+    { "id": "initiateur", "name": "Initiateur·rice", "description": "A organisé ou co-organisé une activité étudiante", "icon": "🌱", "grantedBy": "comite" },
+    { "id": "queteOptionnelle", "name": "Quête optionnelle", "description": "A participé à un événement multimédia non requis", "icon": "🗺️", "grantedBy": "prof" }
+  ],
+  "tutorat": [
+    { "id": "mentore", "name": "Mentoré·e", "description": "A participé au programme de tutorat comme apprenant·e", "icon": "🔍", "grantedBy": "prof" },
+    { "id": "tuteur", "name": "Tuteur·rice", "description": "A accompagné un·e pair·e dans son apprentissage", "icon": "🔥", "grantedBy": "prof" }
+  ],
+  "niveau": [
+    { "id": "annee1", "name": "Première année complétée", "description": "A réussi tous ses cours de 1ère année", "icon": "⭐", "grantedBy": "prof" },
+    { "id": "annee2", "name": "Deuxième année complétée", "description": "A réussi tous ses cours de 2ème année", "icon": "⭐⭐", "grantedBy": "prof" },
+    { "id": "annee3", "name": "Diplômé·e", "description": "A complété l'ensemble du programme", "icon": "⭐⭐⭐", "grantedBy": "prof" }
+  ]
+}

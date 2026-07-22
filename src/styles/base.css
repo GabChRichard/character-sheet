@@ -1,0 +1,97 @@
+/* Reset & Base Variables */
+:root {
+  /* Colors - Default fallback, overridden by themes */
+  --bg-color: #f4f4f4;
+  --text-color: #333;
+  --primary-color: #0056b3;
+  --secondary-color: #6c757d;
+  --accent-color: #ffc107;
+  
+  /* Typography */
+  --font-family: 'Inter', sans-serif;
+  --font-size-base: 16px;
+  
+  /* Spacing */
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  
+  /* Status Colors */
+  --status-valid: #2d7a3e;
+  --status-warn: #b8860b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  font-size: var(--font-size-base);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Utilities */
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+.btn:hover {
+  opacity: 0.8;
+}
+.btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+.btn.secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+.btn.icon-btn {
+  background: none;
+  font-size: 1.5rem;
+  padding: 0.25rem;
+}
+
+/* --- PDF Export Mode --- */
+.pdf-export-mode {
+  background: white !important;
+  color: black !important;
+  box-shadow: none !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+.pdf-export-mode .app-container {
+  border: none !important;
+  box-shadow: none !important;
+  background: white !important;
+}
+
+.pdf-export-mode .skill-status {
+  /* Ensure colors print correctly */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}

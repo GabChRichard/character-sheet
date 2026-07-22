@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="minimal">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administration - Character Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/character-sheet/assets/admin-HEbbDU9M.js"></script>
+    <link rel="modulepreload" crossorigin href="/character-sheet/assets/badges-DbbjW1Ca.js">
+    <link rel="stylesheet" crossorigin href="/character-sheet/assets/admin-zQj00PD0.css">
+  </head>
+  <body class="admin-body">
+    <div id="admin-login" class="login-screen active">
+      <div class="login-box">
+        <h1>Accès Professeur</h1>
+        <div class="input-group" style="flex-direction: column; gap: 8px;">
+          <input type="text" id="admin-username" placeholder="Nom d'utilisateur (ex: momo)" />
+          <input type="password" id="admin-pass" placeholder="Mot de passe" />
+          <button id="admin-login-btn" class="btn primary">Connexion</button>
+          <p id="admin-login-error" class="hidden" style="color: var(--color-danger); font-size: 0.85rem; text-align: center;">Identifiants incorrects.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-dashboard" class="admin-dashboard hidden">
+      <header class="admin-header">
+        <h1>Panneau d'administration</h1>
+        <button id="logout-btn" class="btn secondary">Déconnexion</button>
+      </header>
+
+      <div class="admin-grid">
+        <aside class="student-list-panel">
+          <div class="panel-header">
+            <h2>Étudiants</h2>
+            <button id="new-student-btn" class="btn small">+ Nouveau</button>
+          </div>
+          <input type="text" id="search-student" placeholder="Chercher par nom ou code..." class="search-bar" />
+          <ul id="student-list" class="student-list">
+            <!-- Liste générée dynamiquement -->
+          </ul>
+        </aside>
+
+        <main class="editor-panel hidden" id="editor-panel">
+          <div class="editor-header">
+            <h2 id="edit-student-name">Sélectionnez un étudiant</h2>
+            <span class="code-badge" id="edit-student-code">STU-XXXXXX</span>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="claims">Revue des Claims</button>
+            <button class="tab-btn" data-tab="badges">Badges</button>
+            <button class="tab-btn" data-tab="journal">📋 Journal</button>
+          </div>
+
+          <div class="tab-content active" id="tab-claims">
+            <p class="help-text">Consultez les claims soumis par l'étudiant et leur statut de validation.</p>
+            <div id="claims-list" class="claims-list">
+              <!-- Liste des claims générée dynamiquement -->
+            </div>
+            <!-- Plus de bouton de sauvegarde ici, la validation est automatique -->
+          </div>
+
+          <div class="tab-content hidden" id="tab-badges">
+            <p class="help-text">Attribuez les badges de savoir-être et d'engagement.</p>
+            <div id="badges-toggles" class="badges-toggles">
+              <!-- Checkboxes générées dynamiquement -->
+            </div>
+            <button class="btn primary save-btn">Sauvegarder les badges</button>
+          </div>
+
+          <div class="tab-content hidden" id="tab-journal">
+            <p class="help-text">Historique de toutes les actions effectuées par les administrateurs.</p>
+            <table id="audit-log-table" style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                  <th style="padding: 6px 10px;">Date</th>
+                  <th style="padding: 6px 10px;">Admin</th>
+                  <th style="padding: 6px 10px;">Action</th>
+                  <th style="padding: 6px 10px;">Étudiant</th>
+                  <th style="padding: 6px 10px;">Détail</th>
+                </tr>
+              </thead>
+              <tbody id="audit-log-body">
+                <!-- Rempli dynamiquement -->
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+    </div>
+
+  </body>
+</html>

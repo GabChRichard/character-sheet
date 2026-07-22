@@ -1,0 +1,101 @@
+/* Dark Minimalist Theme 🌌 */
+html[data-theme="dark-minimal"] {
+  --bg-color: #0f0f13;
+  --surface-color: #16161d;
+  --bg-card: #1e1e27;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #e4e4e7;
+  --text-muted: #a1a1aa;
+  --accent-color: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --gold-color: #fbbf24;
+  --tag-bg: rgba(255, 255, 255, 0.05);
+  --radius: 12px;
+  --font-main: 'Inter', sans-serif;
+  --font-title: 'Inter', sans-serif;
+  --shadow-panel: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="dark-minimal"] body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  background-image: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05), transparent 400px);
+}
+
+html[data-theme="dark-minimal"] h1,
+html[data-theme="dark-minimal"] h2,
+html[data-theme="dark-minimal"] h3 {
+  color: var(--text-main);
+  text-shadow: none;
+}
+
+html[data-theme="dark-minimal"] .panel {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-panel);
+}
+
+html[data-theme="dark-minimal"] .project-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+html[data-theme="dark-minimal"] .level-card {
+  background: var(--accent-gradient);
+  border: none;
+  color: #ffffff;
+}
+
+html[data-theme="dark-minimal"] .level-title {
+  color: #ffffff;
+}
+
+html[data-theme="dark-minimal"] .level-bar-bg {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+html[data-theme="dark-minimal"] .level-bar-fill {
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme="dark-minimal"] .level-score {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme="dark-minimal"] .btn.primary {
+  background: var(--accent-gradient);
+  border: none;
+  color: #fff;
+}
+
+html[data-theme="dark-minimal"] .btn.secondary {
+  color: var(--text-main);
+  border-color: var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="dark-minimal"] .btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark-minimal"] .tag {
+  background: var(--tag-bg);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="dark-minimal"] .input-group input {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+html[data-theme="dark-minimal"] .input-group input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}

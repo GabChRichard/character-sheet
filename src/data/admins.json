@@ -1,0 +1,16 @@
+{
+  "admins": [
+    {
+      "username": "momo",
+      "displayName": "Professeur Momo",
+      "password": "admin2024",
+      "role": "prof"
+    },
+    {
+      "username": "comite",
+      "displayName": "Comité Étudiant",
+      "password": "comite2024",
+      "role": "comite"
+    }
+  ]
+}

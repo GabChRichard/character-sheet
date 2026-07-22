@@ -1,0 +1,38 @@
+/* Parchment Theme 🏰 */
+html[data-theme="parchment"] {
+  --bg-color: #f4e8d2; /* Couleur de base papier vieilli */
+  --text-color: #3b2f2f; /* Encre sépia foncée */
+  --primary-color: #8b0000; /* Rouge ancien */
+  --secondary-color: #694a38; /* Marron cuir */
+  --accent-color: #d4af37; /* Or */
+  
+  --font-family: 'MedievalSharp', cursive;
+  
+  /* Image de fond parchemin générée via CSS ou URL externe */
+  /* background-image: url('/assets/textures/parchment.jpg'); */
+  /* background-size: cover; */
+}
+
+html[data-theme="parchment"] .app-container {
+  /* Bordure style RPG ancien */
+  border: 10px solid transparent;
+  border-image: repeating-linear-gradient(45deg, #8b0000, #8b0000 10px, transparent 10px, transparent 20px) 10;
+  background-color: rgba(244, 232, 210, 0.9);
+  box-shadow: 0 0 30px rgba(0,0,0,0.3) inset;
+}
+
+html[data-theme="parchment"] .btn.primary {
+  background: linear-gradient(to bottom, #8b0000, #5a0000);
+  border: 1px solid #3b2f2f;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-family: 'MedievalSharp', cursive;
+}
+
+html[data-theme="parchment"] .radar-container {
+  background: rgba(244, 232, 210, 0.6);
+  border: 2px solid var(--secondary-color);
+}
+
+html[data-theme="parchment"] .project-slot {
+  background: rgba(105, 74, 56, 0.1);
+}
