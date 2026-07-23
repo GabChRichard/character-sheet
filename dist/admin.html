@@ -1,93 +1,150 @@
+<!-- admin.html v5.0 -->
 <!DOCTYPE html>
 <html lang="fr" data-theme="minimal">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Administration - Character Sheet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/character-sheet/assets/admin-HEbbDU9M.js"></script>
-    <link rel="modulepreload" crossorigin href="/character-sheet/assets/badges-DbbjW1Ca.js">
-    <link rel="stylesheet" crossorigin href="/character-sheet/assets/admin-zQj00PD0.css">
-  </head>
-  <body class="admin-body">
-    <div id="admin-login" class="login-screen active">
-      <div class="login-box">
-        <h1>Accès Professeur</h1>
-        <div class="input-group" style="flex-direction: column; gap: 8px;">
-          <input type="text" id="admin-username" placeholder="Nom d'utilisateur (ex: momo)" />
-          <input type="password" id="admin-pass" placeholder="Mot de passe" />
-          <button id="admin-login-btn" class="btn primary">Connexion</button>
-          <p id="admin-login-error" class="hidden" style="color: var(--color-danger); font-size: 0.85rem; text-align: center;">Identifiants incorrects.</p>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Character Sheet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/character-sheet/assets/admin-BCsOGBD9.js"></script>
+  <link rel="modulepreload" crossorigin href="/character-sheet/assets/scoreCalculator-Dt0DpaLS.js">
+  <link rel="stylesheet" crossorigin href="/character-sheet/assets/admin-zQj00PD0.css">
+</head>
+
+<body class="admin-body">
+  <div id="admin-login" class="login-screen active">
+    <div class="login-box">
+      <h1>Accès Professeur</h1>
+      <div class="input-group" style="flex-direction: column; gap: 8px;">
+        <button id="admin-github-login-btn" class="btn primary">🐙 Se connecter avec GitHub</button>
+        <p id="admin-login-error" class="hidden"
+          style="color: var(--color-danger); font-size: 0.85rem; text-align: center;">La connexion a échoué.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-no-account" class="login-screen hidden">
+    <div class="login-box">
+      <h1>Aucun compte trouvé</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Votre compte GitHub (<strong id="admin-no-account-github-username">…</strong>) n'est associé à aucun profil admin. Vérifiez que votre username GitHub a bien été enregistré, ou reconnectez-vous avec le bon compte.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <button type="button" id="admin-no-account-retry-btn" class="btn secondary">🔄 Réessayer</button>
+        <button type="button" id="admin-no-account-logout-btn" class="btn primary">Se déconnecter</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-dashboard" class="admin-dashboard hidden">
+    <header class="admin-header">
+      <h1>Panneau d'administration</h1>
+      <button id="logout-btn" class="btn secondary">Déconnexion</button>
+    </header>
+
+    <div class="admin-grid">
+      <aside class="student-list-panel">
+        <div class="panel-header" style="flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 15px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0; border: none; padding: 0;">Étudiants</h2>
+            <div style="display: flex; gap: 8px;">
+              <button id="import-csv-btn" class="btn small secondary" title="Importer CSV">📥 CSV</button>
+              <input type="file" id="csv-file-input" accept=".csv" class="hidden" />
+              <button id="toggle-new-student-form-btn" class="btn small primary">+ Nouveau</button>
+            </div>
+          </div>
+
+          <!-- FORMULAIRE AJOUT ÉTUDIANT INLINE (V5) -->
+          <div id="new-student-inline-container" class="hidden"
+            style="padding: 10px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: var(--radius);">
+            <form id="new-student-inline-form" style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="new-stu-code" placeholder="Code (ex: Sogol)" required
+                  style="flex: 1; padding: 6px; font-size: 0.8rem;" />
+                <button type="button" id="generate-code-btn" class="btn secondary small"
+                  style="padding: 6px; font-size: 0.75rem;">🎲 Générer</button>
+              </div>
+              <input type="text" id="new-stu-github" placeholder="Username GitHub (ex: octocat)" required
+                style="padding: 6px; font-size: 0.8rem;" />
+              <input type="text" id="new-stu-alias" placeholder="Alias (ex: Guerrier Web)"
+                style="padding: 6px; font-size: 0.8rem;" />
+              <div style="display: flex; gap: 6px;">
+                <button type="submit" class="btn primary small"
+                  style="flex: 1; padding: 5px; font-size: 0.8rem;">Créer</button>
+                <button type="button" id="cancel-new-student-btn" class="btn secondary small"
+                  style="flex: 1; padding: 5px; font-size: 0.8rem;">Annuler</button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-    </div>
+        <input type="text" id="search-student" placeholder="Chercher par nom ou code..." class="search-bar" />
+        <ul id="student-list" class="student-list">
+          <!-- Liste générée dynamiquement -->
+        </ul>
+      </aside>
 
-    <div id="admin-dashboard" class="admin-dashboard hidden">
-      <header class="admin-header">
-        <h1>Panneau d'administration</h1>
-        <button id="logout-btn" class="btn secondary">Déconnexion</button>
-      </header>
+      <main class="editor-panel hidden" id="editor-panel">
+        <div class="editor-header">
+          <h2 id="edit-student-name">Sélectionnez un étudiant</h2>
+          <span class="code-badge" id="edit-student-code">STU-XXXXXX</span>
+        </div>
 
-      <div class="admin-grid">
-        <aside class="student-list-panel">
-          <div class="panel-header">
-            <h2>Étudiants</h2>
-            <button id="new-student-btn" class="btn small">+ Nouveau</button>
-          </div>
-          <input type="text" id="search-student" placeholder="Chercher par nom ou code..." class="search-bar" />
-          <ul id="student-list" class="student-list">
-            <!-- Liste générée dynamiquement -->
-          </ul>
-        </aside>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="projects">Projets & Skills</button>
+          <button class="tab-btn" data-tab="badges">Badges</button>
+          <button class="tab-btn" data-tab="journal">📋 Journal</button>
+        </div>
 
-        <main class="editor-panel hidden" id="editor-panel">
-          <div class="editor-header">
-            <h2 id="edit-student-name">Sélectionnez un étudiant</h2>
-            <span class="code-badge" id="edit-student-code">STU-XXXXXX</span>
-          </div>
+        <!-- PROJETS & SKILLS CALCULÉES (LENTILLE LECTURE SEULE V5) -->
+        <div class="tab-content active" id="tab-projects">
+          <p class="help-text">Visualisation des projets documentés et compétences calculées automatiquement par
+            l'étudiant.</p>
 
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="claims">Revue des Claims</button>
-            <button class="tab-btn" data-tab="badges">Badges</button>
-            <button class="tab-btn" data-tab="journal">📋 Journal</button>
-          </div>
-
-          <div class="tab-content active" id="tab-claims">
-            <p class="help-text">Consultez les claims soumis par l'étudiant et leur statut de validation.</p>
-            <div id="claims-list" class="claims-list">
-              <!-- Liste des claims générée dynamiquement -->
-            </div>
-            <!-- Plus de bouton de sauvegarde ici, la validation est automatique -->
-          </div>
-
-          <div class="tab-content hidden" id="tab-badges">
-            <p class="help-text">Attribuez les badges de savoir-être et d'engagement.</p>
-            <div id="badges-toggles" class="badges-toggles">
-              <!-- Checkboxes générées dynamiquement -->
-            </div>
-            <button class="btn primary save-btn">Sauvegarder les badges</button>
-          </div>
-
-          <div class="tab-content hidden" id="tab-journal">
-            <p class="help-text">Historique de toutes les actions effectuées par les administrateurs.</p>
-            <table id="audit-log-table" style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
-              <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
-                  <th style="padding: 6px 10px;">Date</th>
-                  <th style="padding: 6px 10px;">Admin</th>
-                  <th style="padding: 6px 10px;">Action</th>
-                  <th style="padding: 6px 10px;">Étudiant</th>
-                  <th style="padding: 6px 10px;">Détail</th>
-                </tr>
-              </thead>
-              <tbody id="audit-log-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;"
+            class="admin-student-view-grid">
+            <div>
+              <h3 style="font-size: 0.95rem; margin-bottom: 10px;">Compétences (Calculées)</h3>
+              <div id="admin-skills-view" style="display: flex; flex-direction: column; gap: 8px;">
                 <!-- Rempli dynamiquement -->
-              </tbody>
-            </table>
+              </div>
+            </div>
+            <div>
+              <h3 style="font-size: 0.95rem; margin-bottom: 10px;">Projets</h3>
+              <div id="admin-projects-view" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Rempli dynamiquement -->
+              </div>
+            </div>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
 
-  </body>
+        <div class="tab-content hidden" id="tab-badges">
+          <p class="help-text">Attribuez les badges de savoir-être et d'engagement.</p>
+          <div id="badges-toggles" class="badges-toggles">
+            <!-- Checkboxes générées dynamiquement -->
+          </div>
+          <button class="btn primary save-btn">Sauvegarder les badges</button>
+        </div>
+
+        <div class="tab-content hidden" id="tab-journal">
+          <p class="help-text">Historique de toutes les actions effectuées par les administrateurs.</p>
+          <table id="audit-log-table" style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 6px 10px;">Date</th>
+                <th style="padding: 6px 10px;">Admin</th>
+                <th style="padding: 6px 10px;">Action</th>
+                <th style="padding: 6px 10px;">Étudiant</th>
+                <th style="padding: 6px 10px;">Détail</th>
+              </tr>
+            </thead>
+            <tbody id="audit-log-body">
+              <!-- Rempli dynamiquement -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+
 </html>

@@ -126,7 +126,8 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       if (isEdit) {
         await db.updateProject(project.id, projectData);
       } else {
-        await db.addProject(projectData);
+        const studentCode = document.getElementById('student-code-input').value;
+        await db.addProject({ ...projectData, studentCode });
       }
       closeForm();
       if (onActionCompleted) onActionCompleted();

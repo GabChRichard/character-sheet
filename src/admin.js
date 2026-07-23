@@ -15,37 +15,66 @@ let studentsCache = [];
 let projectsCache = {};      // Map code -> projects
 let endorsementsCache = {};  // Map code -> endorsements
 
-console.log("Interface d'administration initialisée (v5.0).");
+console.log("Interface d'administration initialisée (v6.0).");
 
-// Connexion Admin
-document.getElementById('admin-login-btn')?.addEventListener('click', handleLogin);
-document.getElementById('admin-pass')?.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') handleLogin();
+// --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
+
+function showLoginScreen() {
+  document.getElementById('admin-login').classList.remove('hidden');
+  document.getElementById('admin-no-account').classList.add('hidden');
+  document.getElementById('admin-dashboard').classList.add('hidden');
+}
+
+async function showNoAccountScreen() {
+  document.getElementById('admin-login').classList.add('hidden');
+  document.getElementById('admin-no-account').classList.remove('hidden');
+  document.getElementById('admin-dashboard').classList.add('hidden');
+
+  const githubUsername = await db.getGithubUsername();
+  const detected = document.getElementById('admin-no-account-github-username');
+  if (detected) detected.innerText = githubUsername || '(inconnu)';
+}
+
+async function showDashboard(admin) {
+  currentAdmin = { username: admin.username, displayName: admin.display_name, role: admin.role };
+  document.getElementById('admin-login').classList.add('hidden');
+  document.getElementById('admin-no-account').classList.add('hidden');
+  document.getElementById('admin-dashboard').classList.remove('hidden');
+
+  const header = document.querySelector('.admin-header h1');
+  if (header) header.innerText = `Panneau d'administration — ${admin.display_name} (${admin.role})`;
+
+  await refreshDashboard();
+}
+
+async function bootstrap() {
+  const { data: { session } } = await db.getAuthSession();
+  if (!session) {
+    showLoginScreen();
+    return;
+  }
+
+  const mine = await db.getMyAdmin();
+  if (!mine) {
+    await showNoAccountScreen();
+    return;
+  }
+
+  await showDashboard(mine);
+}
+
+document.getElementById('admin-github-login-btn')?.addEventListener('click', async () => {
+  await db.signInWithGithub(window.location.origin + window.location.pathname);
 });
 
-async function handleLogin() {
-  const username = document.getElementById('admin-username').value.trim().toLowerCase();
-  const pass = document.getElementById('admin-pass').value;
-  const errorEl = document.getElementById('admin-login-error');
+document.getElementById('admin-no-account-retry-btn')?.addEventListener('click', () => {
+  bootstrap();
+});
 
-  const res = await db.verifyAdmin(username, pass);
-
-  if (res.success) {
-    const admin = res.admin;
-    currentAdmin = { username: username, password: pass, displayName: admin.display_name, role: admin.role };
-    errorEl.classList.add('hidden');
-
-    document.getElementById('admin-login').classList.add('hidden');
-    document.getElementById('admin-dashboard').classList.remove('hidden');
-
-    const header = document.querySelector('.admin-header h1');
-    if (header) header.innerText = `Panneau d'administration — ${admin.display_name} (${admin.role})`;
-
-    await refreshDashboard();
-  } else {
-    errorEl.classList.remove('hidden');
-  }
-}
+document.getElementById('admin-no-account-logout-btn')?.addEventListener('click', async () => {
+  await db.signOut();
+  window.location.reload();
+});
 
 // Rafraîchir les données globales du dashboard
 async function refreshDashboard() {
@@ -67,15 +96,11 @@ async function refreshDashboard() {
 }
 
 // Déconnexion
-document.getElementById('logout-btn')?.addEventListener('click', () => {
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
   currentAdmin = null;
   currentStudentCode = null;
-  db.clearAdminSession();
-  document.getElementById('admin-dashboard').classList.add('hidden');
-  document.getElementById('admin-login').classList.remove('hidden');
-  document.getElementById('admin-username').value = '';
-  document.getElementById('admin-pass').value = '';
-  document.getElementById('editor-panel').classList.add('hidden');
+  await db.signOut();
+  window.location.reload();
 });
 
 // Événement recherche
@@ -118,15 +143,15 @@ generateCodeBtn?.addEventListener('click', () => {
 document.getElementById('new-student-inline-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const code = document.getElementById('new-stu-code').value.trim();
-  const pass = document.getElementById('new-stu-pass').value;
+  const githubUsername = document.getElementById('new-stu-github').value.trim();
   const alias = document.getElementById('new-stu-alias').value.trim() || 'Étudiant';
 
-  if (!code || !pass) return;
+  if (!code || !githubUsername) return;
 
   try {
     const list = [{
       code,
-      password: pass,
+      githubUsername,
       alias,
       year: 1,
       interests: [],
@@ -138,7 +163,6 @@ document.getElementById('new-student-inline-form')?.addEventListener('submit', a
 
     // Audit log
     await db.logAction({
-      admin_display: currentAdmin.displayName,
       action: 'student_created',
       target_student: code,
       detail: `Création de l'étudiant ${alias} (${code})`
@@ -172,10 +196,10 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
     const students = [];
     for (let i = start; i < lines.length; i++) {
       const parts = lines[i].split(',').map(p => p.trim());
-      if (parts.length >= 2) {
+      if (parts.length >= 2 && parts[0] && parts[1]) {
         students.push({
           code: parts[0],
-          password: parts[1],
+          githubUsername: parts[1],
           alias: parts[2] || '',
           year: 1,
           interests: [],
@@ -190,7 +214,6 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
       try {
         await db.bulkImportStudents(students);
         await db.logAction({
-          admin_display: currentAdmin.displayName,
           action: 'bulk_import',
           target_student: 'N/A',
           detail: `Import de ${students.length} étudiants via CSV`
@@ -331,7 +354,6 @@ document.querySelector('.save-btn')?.addEventListener('click', async () => {
 
     const badgeNames = Object.keys(newBadges).join(', ') || '(aucun)';
     await db.logAction({
-      admin_display: currentAdmin.displayName,
       action: 'badge_assigned',
       target_student: currentStudentCode,
       detail: `Badges mis à jour : ${badgeNames}`
@@ -343,3 +365,5 @@ document.querySelector('.save-btn')?.addEventListener('click', async () => {
     alert("Erreur lors de la sauvegarde : " + err.message);
   }
 });
+
+bootstrap();

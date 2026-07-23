@@ -16,11 +16,20 @@
     <div class="login-box">
       <h1>Accès Professeur</h1>
       <div class="input-group" style="flex-direction: column; gap: 8px;">
-        <input type="text" id="admin-username" placeholder="Nom d'utilisateur (ex: momo)" autocomplete="username" />
-        <input type="password" id="admin-pass" placeholder="Mot de passe" autocomplete="current-password" />
-        <button id="admin-login-btn" class="btn primary">Connexion</button>
+        <button id="admin-github-login-btn" class="btn primary">🐙 Se connecter avec GitHub</button>
         <p id="admin-login-error" class="hidden"
-          style="color: var(--color-danger); font-size: 0.85rem; text-align: center;">Identifiants incorrects.</p>
+          style="color: var(--color-danger); font-size: 0.85rem; text-align: center;">La connexion a échoué.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="admin-no-account" class="login-screen hidden">
+    <div class="login-box">
+      <h1>Aucun compte trouvé</h1>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Votre compte GitHub (<strong id="admin-no-account-github-username">…</strong>) n'est associé à aucun profil admin. Vérifiez que votre username GitHub a bien été enregistré, ou reconnectez-vous avec le bon compte.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <button type="button" id="admin-no-account-retry-btn" class="btn secondary">🔄 Réessayer</button>
+        <button type="button" id="admin-no-account-logout-btn" class="btn primary">Se déconnecter</button>
       </div>
     </div>
   </div>
@@ -53,7 +62,7 @@
                 <button type="button" id="generate-code-btn" class="btn secondary small"
                   style="padding: 6px; font-size: 0.75rem;">🎲 Générer</button>
               </div>
-              <input type="password" id="new-stu-pass" placeholder="Mot de passe" required
+              <input type="text" id="new-stu-github" placeholder="Username GitHub (ex: octocat)" required
                 style="padding: 6px; font-size: 0.8rem;" />
               <input type="text" id="new-stu-alias" placeholder="Alias (ex: Guerrier Web)"
                 style="padding: 6px; font-size: 0.8rem;" />

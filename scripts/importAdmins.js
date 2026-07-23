@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import readline from 'readline';
 import { createClient } from '@supabase/supabase-js';
 
-function loadEnv() {
-  const envPath = path.resolve(process.cwd(), '.env');
+function loadEnvFile(filename) {
+  const envPath = path.resolve(process.cwd(), filename);
   if (!fs.existsSync(envPath)) {
-    console.error("❌ Fichier .env introuvable dans le répertoire courant.");
+    console.error(`❌ Fichier ${filename} introuvable dans le répertoire courant.`);
     process.exit(1);
   }
 
@@ -46,24 +45,18 @@ function parseCSVLine(line) {
   return result;
 }
 
-function askQuestion(query) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  return new Promise(resolve => rl.question(query, ans => {
-    rl.close();
-    resolve(ans);
-  }));
-}
-
 async function main() {
-  const env = loadEnv();
+  const env = loadEnvFile('.env');
+  const adminEnv = loadEnvFile('.env.admin');
   const supabaseUrl = env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
+  const serviceRoleKey = adminEnv.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("❌ Variables Supabase manquantes dans le .env");
+  if (!supabaseUrl) {
+    console.error("❌ La variable VITE_SUPABASE_URL est manquante dans .env");
+    process.exit(1);
+  }
+  if (!serviceRoleKey) {
+    console.error("❌ La variable SUPABASE_SERVICE_ROLE_KEY est manquante dans .env.admin (voir DEPLOY_SUPABASE.md).");
     process.exit(1);
   }
 
@@ -73,7 +66,7 @@ async function main() {
 
   let csvFile = process.argv[2];
   if (!csvFile) {
-    csvFile = 'admins.csv';
+    csvFile = 'profs.csv';
     console.log(`ℹ️ Utilisation du fichier par défaut : ${csvFile}`);
   }
 
@@ -83,19 +76,13 @@ async function main() {
     process.exit(1);
   }
 
-  // Connexion admin pour autorisation (si déjà des admins)
-  const tempClient = createClient(supabaseUrl, supabaseAnonKey);
-  let adminUser = '';
-  let adminPass = '';
-
-  const { data: existingAdmins } = await tempClient.from('admins').select('username').limit(1);
-  const needsAuth = existingAdmins && existingAdmins.length > 0;
-
-  if (needsAuth) {
-    console.log("🔒 Des administrateurs existent déjà. Connexion requise.");
-    adminUser = await askQuestion("Username admin existant : ");
-    adminPass = await askQuestion("Mot de passe : ");
-  }
+  // Ce script utilise la clé service_role : elle bypass RLS, donc aucune
+  // authentification admin préalable n'est nécessaire (contrairement à v5 où
+  // le tout premier admin devait s'auto-bootstrapper via une RPC accessible
+  // avec la seule clé anon — risque d'escalade de privilège sous OAuth).
+  // Ne jamais exposer cette clé côté client — elle ne doit vivre que dans
+  // .env.admin (gitignored).
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   console.log("📄 Lecture du fichier CSV...");
   const csvContent = fs.readFileSync(csvPath, 'utf-8');
@@ -109,28 +96,30 @@ async function main() {
   const admins = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = parseCSVLine(lines[i]);
-    if (cols.length < 3) continue; // username, password, display_name, role
+    if (cols.length < 2 || !cols[0]) continue; // username, githubUsername, display_name, role
     admins.push({
       username: cols[0],
-      password: cols[1],
-      display_name: cols[2],
+      github_username: cols[1] || null,
+      display_name: cols[2] || cols[0],
       role: cols[3] || 'prof'
     });
   }
 
   console.log(`📦 Importation de ${admins.length} administrateurs...`);
 
-  const { data, error } = await tempClient.rpc('admin_import_admins', {
-    p_username: adminUser,
-    p_password: adminPass,
-    p_admins: admins
-  });
+  // auth_user_id n'est jamais inclus dans le payload : un ré-import ne peut
+  // donc pas délier un admin déjà auto-lié à son compte GitHub.
+  const { error } = await supabase
+    .from('admins')
+    .upsert(admins, { onConflict: 'username' });
 
   if (error) {
     console.error("❌ Erreur lors de l'importation :", error.message);
-  } else {
-    console.log("🎉 Importation des administrateurs réussie !");
+    process.exit(1);
   }
+
+  console.log("🎉 Importation des administrateurs réussie !");
+  console.log("ℹ️ Chaque admin doit maintenant se connecter avec GitHub et entrer son username une seule fois pour activer son compte.");
 }
 
 main().catch(err => console.error("❌ Erreur :", err));

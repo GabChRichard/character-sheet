@@ -56,7 +56,7 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
       try {
         const code = document.getElementById('student-code-input').value;
         const publicUrl = await db.uploadAvatar(code, file);
-        await db.updateStudentProfile(code, { avatarUrl: publicUrl });
+        await db.updateStudentProfile({ avatarUrl: publicUrl });
         if (onUpdate) onUpdate();
       } catch (err) {
         alert("Erreur lors de l'upload de l'avatar: " + err.message);
@@ -122,8 +122,7 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
           const newAlias = document.getElementById('prof-alias').value.trim();
           const newBio = document.getElementById('prof-bio').value.trim();
           try {
-            const code = document.getElementById('student-code-input').value;
-            await db.updateStudentProfile(code, {
+            await db.updateStudentProfile({
               alias: newAlias,
               bio: newBio,
               interests: profile.interests || []

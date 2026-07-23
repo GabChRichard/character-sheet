@@ -7,41 +7,54 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export class SupabaseService {
-  constructor() {
-    this.session = {
-      code: '',
-      password: ''
-    };
-    this.adminSession = {
-      username: '',
-      password: ''
-    };
+  // --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
+
+  async signInWithGithub(redirectTo) {
+    return supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo }
+    });
   }
 
-  // --- GESTION DES SESSIONS EN MÉMOIRE ---
-
-  setSession(code, password) {
-    this.session = { code, password };
+  async signOut() {
+    return supabase.auth.signOut();
   }
 
-  clearSession() {
-    this.session = { code: '', password: '' };
+  async getAuthSession() {
+    return supabase.auth.getSession();
   }
 
-  getSession() {
-    return this.session;
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange(callback);
   }
 
-  setAdminSession(username, password) {
-    this.adminSession = { username, password };
+  // Username GitHub du compte actuellement connecté (pour affichage si aucun
+  // rattachement n'est trouvé côté serveur).
+  async getGithubUsername() {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || null;
   }
 
-  clearAdminSession() {
-    this.adminSession = { username: '', password: '' };
+  // Retourne le student lié au compte GitHub connecté (auto-lié au premier
+  // login si son username GitHub correspond à une ligne pré-provisionnée non
+  // réclamée), ou null si aucune correspondance.
+  async getMyStudent() {
+    const { data, error } = await supabase.rpc('get_my_student');
+    if (error) {
+      console.error("getMyStudent error:", error);
+      return null;
+    }
+    return data?.[0] || null;
   }
 
-  getAdminSession() {
-    return this.adminSession;
+  // Équivalent admin.
+  async getMyAdmin() {
+    const { data, error } = await supabase.rpc('get_my_admin');
+    if (error) {
+      console.error("getMyAdmin error:", error);
+      return null;
+    }
+    return data?.[0] || null;
   }
 
   // --- LECTURE PUBLIQUE ---
@@ -94,35 +107,11 @@ export class SupabaseService {
     return data || [];
   }
 
-  // --- AUTHENTIFICATION ÉTUDIANT ---
-
-  async login(code, password) {
-    const { data, error } = await supabase
-      .rpc('verify_student_login', { p_code: code, p_password: password });
-    
-    if (error) {
-      console.error("login error:", error);
-      return { success: false, error: error.message };
-    }
-
-    if (data && data.length > 0) {
-      this.setSession(code, password);
-      return { success: true, student: data[0] };
-    }
-
-    return { success: false, error: "Code ou mot de passe invalide." };
-  }
-
   // --- ÉCRITURES ÉTUDIANT ---
 
-  async updateStudentProfile(code, updates) {
-    const password = this.session.password;
+  async updateStudentProfile(updates) {
     const { data, error } = await supabase
-      .rpc('update_student_profile_rpc', {
-        p_code: code,
-        p_password: password,
-        p_updates: updates
-      });
+      .rpc('update_student_profile_rpc', { p_updates: updates });
     if (error) {
       console.error("updateStudentProfile error:", error);
       throw error;
@@ -131,18 +120,19 @@ export class SupabaseService {
   }
 
   async addProject(projectData) {
-    const { code, password } = this.session;
     const { data, error } = await supabase
-      .rpc('add_project_rpc', {
-        p_code: code,
-        p_password: password,
-        p_name: projectData.name,
-        p_description: projectData.description,
-        p_course: projectData.course,
-        p_semester: projectData.semester || '',
-        p_skills: projectData.skills || [],
-        p_link: projectData.link || ''
-      });
+      .from('projects')
+      .insert({
+        student_code: projectData.studentCode,
+        name: projectData.name,
+        description: projectData.description,
+        course: projectData.course,
+        semester: projectData.semester || '',
+        skills: projectData.skills || [],
+        link: projectData.link || ''
+      })
+      .select()
+      .single();
     if (error) {
       console.error("addProject error:", error);
       throw error;
@@ -151,19 +141,19 @@ export class SupabaseService {
   }
 
   async updateProject(projectId, projectData) {
-    const { code, password } = this.session;
     const { data, error } = await supabase
-      .rpc('update_project_rpc', {
-        p_code: code,
-        p_password: password,
-        p_project_id: projectId,
-        p_name: projectData.name,
-        p_description: projectData.description,
-        p_course: projectData.course,
-        p_semester: projectData.semester || '',
-        p_skills: projectData.skills || [],
-        p_link: projectData.link || ''
-      });
+      .from('projects')
+      .update({
+        name: projectData.name,
+        description: projectData.description,
+        course: projectData.course,
+        semester: projectData.semester || '',
+        skills: projectData.skills || [],
+        link: projectData.link || ''
+      })
+      .eq('id', projectId)
+      .select()
+      .single();
     if (error) {
       console.error("updateProject error:", error);
       throw error;
@@ -172,11 +162,8 @@ export class SupabaseService {
   }
 
   async togglePin(projectId, pinned, pinOrder = 1) {
-    const { code, password } = this.session;
     const { data, error } = await supabase
       .rpc('toggle_pin_rpc', {
-        p_code: code,
-        p_password: password,
         p_project_id: projectId,
         p_pinned: pinned,
         p_pin_order: pinOrder
@@ -189,28 +176,23 @@ export class SupabaseService {
   }
 
   async deleteProject(projectId) {
-    const { code, password } = this.session;
-    const { data, error } = await supabase
-      .rpc('delete_project_rpc', {
-        p_code: code,
-        p_password: password,
-        p_project_id: projectId
-      });
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
     if (error) {
       console.error("deleteProject error:", error);
       throw error;
     }
-    return data;
+    return true;
   }
 
   async addEndorsement(fromCode, projectId) {
-    const password = this.session.password;
     const { data, error } = await supabase
-      .rpc('add_endorsement_rpc', {
-        p_from_code: fromCode,
-        p_from_password: password,
-        p_project_id: projectId
-      });
+      .from('endorsements')
+      .insert({ from_code: fromCode, project_id: projectId })
+      .select()
+      .single();
     if (error) {
       console.error("addEndorsement error:", error);
       throw error;
@@ -219,18 +201,16 @@ export class SupabaseService {
   }
 
   async removeEndorsement(fromCode, projectId) {
-    const password = this.session.password;
-    const { data, error } = await supabase
-      .rpc('remove_endorsement_rpc', {
-        p_from_code: fromCode,
-        p_from_password: password,
-        p_project_id: projectId
-      });
+    const { error } = await supabase
+      .from('endorsements')
+      .delete()
+      .eq('from_code', fromCode)
+      .eq('project_id', projectId);
     if (error) {
       console.error("removeEndorsement error:", error);
       throw error;
     }
-    return data;
+    return true;
   }
 
   // Upload d'image de profil vers Supabase Storage (bucket "avatars")
@@ -259,26 +239,13 @@ export class SupabaseService {
   }
 
 
-  // --- ACCÈS & ÉCRITURES ADMIN ---
-
-  async verifyAdmin(username, password) {
-    const { data, error } = await supabase
-      .rpc('admin_verify_login', { p_username: username, p_password: password });
-    if (error) {
-      console.error("verifyAdmin error:", error);
-      return { success: false, error: error.message };
-    }
-    if (data && data.length > 0) {
-      this.setAdminSession(username, password);
-      return { success: true, admin: data[0] };
-    }
-    return { success: false, error: "Identifiants invalides" };
-  }
+  // --- LECTURE & ÉCRITURES ADMIN ---
 
   async getAllStudents() {
-    const { username, password } = this.adminSession;
     const { data, error } = await supabase
-      .rpc('admin_get_all_students', { p_username: username, p_password: password });
+      .from('students')
+      .select('code, profile, badges, updated_at, updated_by')
+      .order('code', { ascending: true });
     if (error) {
       console.error("getAllStudents error:", error);
       return [];
@@ -287,11 +254,8 @@ export class SupabaseService {
   }
 
   async updateStudentBadges(studentCode, badges) {
-    const { username, password } = this.adminSession;
     const { data, error } = await supabase
-      .rpc('admin_update_student_badges', {
-        p_username: username,
-        p_password: password,
+      .rpc('admin_update_student_badges_rpc', {
         p_student_code: studentCode,
         p_badges: badges
       });
@@ -303,13 +267,8 @@ export class SupabaseService {
   }
 
   async logAction(actionData) {
-    const { username, password } = this.adminSession;
     const { data, error } = await supabase
-      .rpc('admin_log_action', {
-        p_username: username,
-        p_password: password,
-        p_action: actionData
-      });
+      .rpc('admin_log_action_rpc', { p_action: actionData });
     if (error) {
       console.error("logAction error:", error);
       throw error;
@@ -318,9 +277,10 @@ export class SupabaseService {
   }
 
   async getAuditLog() {
-    const { username, password } = this.adminSession;
     const { data, error } = await supabase
-      .rpc('admin_get_audit_log', { p_username: username, p_password: password });
+      .from('audit_log')
+      .select('*')
+      .order('timestamp', { ascending: false });
     if (error) {
       console.error("getAuditLog error:", error);
       return [];
@@ -329,13 +289,8 @@ export class SupabaseService {
   }
 
   async bulkImportStudents(studentsList) {
-    const { username, password } = this.adminSession;
     const { data, error } = await supabase
-      .rpc('admin_import_students', {
-        p_username: username,
-        p_password: password,
-        p_students: studentsList
-      });
+      .rpc('admin_import_students_rpc', { p_students: studentsList });
     if (error) {
       console.error("bulkImportStudents error:", error);
       throw error;

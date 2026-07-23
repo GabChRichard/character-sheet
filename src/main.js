@@ -70,34 +70,69 @@ async function loadStudentData(code, isVisitor = false) {
   }
 }
 
-// Formulaire de connexion
-const loginForm = document.getElementById('login-form');
-loginForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const code = document.getElementById('login-code').value.trim();
-  const password = document.getElementById('login-password').value;
-  const loginError = document.getElementById('login-error');
-  
-  const res = await db.login(code, password);
-  if (res.success) {
-    myCode = code;
-    loginError.classList.add('hidden');
-    document.getElementById('student-code-input').value = code;
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('character-sheet').classList.remove('hidden');
-    
-    await loadStudentData(code, false);
-  } else {
-    loginError.innerText = res.error || "Code ou mot de passe incorrect.";
-    loginError.classList.remove('hidden');
+// --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
+
+function showLoginScreen() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('no-account-screen').classList.add('hidden');
+  document.getElementById('character-sheet').classList.add('hidden');
+}
+
+async function showNoAccountScreen() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('no-account-screen').classList.remove('hidden');
+  document.getElementById('character-sheet').classList.add('hidden');
+
+  const githubUsername = await db.getGithubUsername();
+  const detected = document.getElementById('no-account-github-username');
+  if (detected) detected.innerText = githubUsername || '(inconnu)';
+}
+
+async function showCharacterSheet(code) {
+  myCode = code;
+  document.getElementById('student-code-input').value = code;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('no-account-screen').classList.add('hidden');
+  document.getElementById('character-sheet').classList.remove('hidden');
+  await loadStudentData(code, false);
+}
+
+async function bootstrap() {
+  const { data: { session } } = await db.getAuthSession();
+  if (!session) {
+    showLoginScreen();
+    return;
   }
+
+  const mine = await db.getMyStudent();
+  if (!mine) {
+    await showNoAccountScreen();
+    return;
+  }
+
+  await showCharacterSheet(mine.code);
+}
+
+document.getElementById('github-login-btn')?.addEventListener('click', async () => {
+  await db.signInWithGithub(window.location.origin + window.location.pathname);
+});
+
+document.getElementById('no-account-retry-btn')?.addEventListener('click', () => {
+  bootstrap();
+});
+
+document.getElementById('no-account-logout-btn')?.addEventListener('click', async () => {
+  await db.signOut();
+  window.location.reload();
 });
 
 // Déconnexion
-document.getElementById('student-logout-btn')?.addEventListener('click', () => {
-  db.clearSession();
+document.getElementById('student-logout-btn')?.addEventListener('click', async () => {
+  await db.signOut();
   window.location.reload();
 });
+
+bootstrap();
 
 // Sélecteurs de thèmes
 document.querySelectorAll('button[data-theme-target]').forEach(btn => {
@@ -107,7 +142,7 @@ document.querySelectorAll('button[data-theme-target]').forEach(btn => {
     
     // Si propriétaire, sauvegarder dans son profil
     if (currentViewedCode === myCode && myCode) {
-      await db.updateStudentProfile(myCode, { theme: theme });
+      await db.updateStudentProfile({ theme: theme });
     }
   });
 });

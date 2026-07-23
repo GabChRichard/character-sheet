@@ -51,8 +51,7 @@ export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
     if (!text) return;
     const updatedSkills = [...softSkills, text];
     try {
-      const code = document.getElementById('student-code-input').value;
-      await db.updateStudentProfile(code, { softSkills: updatedSkills });
+      await db.updateStudentProfile({ softSkills: updatedSkills });
       if (onUpdate) onUpdate();
     } catch (err) {
       alert("Erreur lors de l'ajout: " + err.message);
@@ -70,8 +69,7 @@ export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
       const index = parseInt(e.currentTarget.dataset.index, 10);
       const updatedSkills = softSkills.filter((_, idx) => idx !== index);
       try {
-        const code = document.getElementById('student-code-input').value;
-        await db.updateStudentProfile(code, { softSkills: updatedSkills });
+        await db.updateStudentProfile({ softSkills: updatedSkills });
         if (onUpdate) onUpdate();
       } catch (err) {
         alert("Erreur lors de la suppression: " + err.message);
@@ -93,8 +91,7 @@ export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
       updatedSkills[index] = text;
 
       try {
-        const code = document.getElementById('student-code-input').value;
-        await db.updateStudentProfile(code, { softSkills: updatedSkills });
+        await db.updateStudentProfile({ softSkills: updatedSkills });
         if (onUpdate) onUpdate();
       } catch (err) {
         alert("Erreur lors de la modification: " + err.message);

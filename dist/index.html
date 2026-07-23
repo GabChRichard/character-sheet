@@ -1,17 +1,18 @@
+<!-- index.html v5.0 -->
 <!DOCTYPE html>
-<html lang="fr" data-theme="parchment">
+<html lang="fr" data-theme="dark-minimal">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Feuille de Personnage — Multimédia</title>
-    <meta name="description" content="Fiche de progression étudiante du département multimédia. Consultez vos compétences revendiquées, projets et badges." />
+    <meta name="description" content="Fiche de progression étudiante du département multimédia. Vos compétences calculées automatiquement par vos projets et endossements." />
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/character-sheet/assets/main-Ck9r80yq.js"></script>
-    <link rel="modulepreload" crossorigin href="/character-sheet/assets/badges-DbbjW1Ca.js">
-    <link rel="stylesheet" crossorigin href="/character-sheet/assets/main-C6GdDSG-.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/character-sheet/assets/main-CI7EZTz4.js"></script>
+    <link rel="modulepreload" crossorigin href="/character-sheet/assets/scoreCalculator-Dt0DpaLS.js">
+    <link rel="stylesheet" crossorigin href="/character-sheet/assets/main-Cu72OmJ3.css">
   </head>
   <body>
     <div id="app">
@@ -21,20 +22,23 @@
         <div class="login-box">
           <div class="login-logo">🎓</div>
           <h1>Feuille de Personnage</h1>
-          <p>Connectez-vous pour accéder à votre profil.</p>
-          <form id="login-form" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <input type="hidden" id="student-code-input" />
-            <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
-              <label for="login-code" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">Code étudiant</label>
-              <input type="text" id="login-code" placeholder="Ex : STU-7f3a9b" required autocomplete="username" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius); font-family: var(--font-main); width: 100%;" />
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
-              <label for="login-password" style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">Mot de passe</label>
-              <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius); font-family: var(--font-main); width: 100%;" />
-            </div>
-            <button type="submit" id="login-btn" class="btn primary" style="justify-content: center; width: 100%; margin-top: 10px;">Se connecter</button>
-          </form>
-          <div id="login-error" class="error-msg hidden">Code ou mot de passe incorrect.</div>
+          <p>Connectez-vous avec GitHub pour accéder à votre profil.</p>
+          <input type="hidden" id="student-code-input" />
+          <button type="button" id="github-login-btn" class="btn primary" style="justify-content: center; width: 100%; margin-top: 20px;">🐙 Se connecter avec GitHub</button>
+          <div id="login-error" class="error-msg hidden">La connexion a échoué.</div>
+        </div>
+      </section>
+
+      <!-- ====== ÉCRAN "AUCUN COMPTE TROUVÉ" ====== -->
+      <section id="no-account-screen" class="login-screen hidden">
+        <div class="login-box">
+          <div class="login-logo">🔍</div>
+          <h1>Aucun compte trouvé</h1>
+          <p>Votre compte GitHub (<strong id="no-account-github-username">…</strong>) n'est associé à aucun profil étudiant. Contactez votre professeur pour qu'il vous rattache, ou reconnectez-vous avec le bon compte GitHub.</p>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <button type="button" id="no-account-retry-btn" class="btn secondary" style="justify-content: center; width: 100%;">🔄 Réessayer</button>
+            <button type="button" id="no-account-logout-btn" class="btn primary" style="justify-content: center; width: 100%;">Se déconnecter</button>
+          </div>
         </div>
       </section>
 
@@ -45,9 +49,9 @@
         <div class="top-bar">
           <div class="app-title">🏰 Fiche de Personnage</div>
           <div class="top-actions">
+            <button class="btn icon-btn" data-theme-target="dark-minimal" title="Thème Dark Minimal">🌌</button>
             <button class="btn icon-btn" data-theme-target="parchment" title="Thème Parchemin">🏰</button>
             <button class="btn icon-btn" data-theme-target="cyber" title="Thème Cyber">🌐</button>
-            <button class="btn icon-btn" data-theme-target="minimal" title="Thème Minimal">🎨</button>
             <button class="btn icon-btn" id="export-pdf-btn" title="Exporter en PDF">📄</button>
             <button class="btn icon-btn" id="student-logout-btn" title="Se déconnecter" style="margin-left: 10px;">🚪</button>
           </div>
@@ -62,13 +66,20 @@
             <!-- Profil -->
             <div class="panel profile-panel">
               <div class="profile-header">
-                <div class="avatar" id="student-avatar">🧙‍♂️</div>
+                <div class="avatar-container" style="position: relative; display: inline-block;">
+                  <div class="avatar" id="student-avatar">🧙‍♂️</div>
+                  <label for="avatar-upload" class="avatar-edit-overlay" title="Changer l'image">📷</label>
+                  <input type="file" id="avatar-upload" accept="image/*" class="hidden" />
+                </div>
                 <h1 class="alias">
                   <span id="student-alias">Alias</span>
                   <button class="btn icon-btn" id="edit-profile-btn" title="Éditer le profil" style="font-size: 1rem;">✏️</button>
                 </h1>
                 <p class="bio" id="student-bio"></p>
-                <div class="tags" id="student-interests"></div>
+                <div class="interests-section" style="margin-top: 10px; text-align: left;">
+                  <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted);">Intérêts :</div>
+                  <div class="tags" id="student-interests"></div>
+                </div>
               </div>
 
               <!-- Niveau global -->
@@ -81,25 +92,30 @@
               </div>
             </div>
 
+            <!-- Savoir-être (Soft Skills) -->
+            <div class="panel" id="soft-skills-container">
+              <!-- Rendu par SoftSkillsEditor.js -->
+            </div>
+
             <!-- Badges -->
             <div class="panel">
-              <h2>Badges & Savoir-être</h2>
+              <h2>🏅 Badges</h2>
               <div class="badges-grid" id="badges-grid">
                 <!-- Badges générés ici -->
               </div>
             </div>
 
-            <!-- Endossements (Trouver un pair) -->
+            <!-- Visiter un pair (ex-Endosser un pair) -->
             <div class="panel">
-              <h2>Endosser un pair</h2>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez le code secret d'un autre étudiant pour voir ses compétences et l'endosser.</p>
+              <h2>🔍 Chercher un pair</h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez le code d'un étudiant pour endosser ses projets.</p>
               <div class="input-group">
-                <input type="text" id="peer-code-input" placeholder="Ex: STU-987654" />
-                <button id="search-peer-btn" class="btn secondary">Chercher</button>
+                <input type="text" id="peer-code-input" placeholder="Ex: STU-1234" />
+                <button id="search-peer-btn" class="btn primary" style="padding: 0 16px;">🔍 Chercher</button>
               </div>
-              <div id="peer-result" class="hidden" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-                <h3 id="peer-alias" style="font-size: 1rem; margin-bottom: 10px;">Alias</h3>
-                <div id="peer-skills-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+              <div id="visitor-mode-indicator" class="hidden" style="margin-top: 10px; padding: 8px; background: rgba(139, 92, 246, 0.1); border-radius: var(--radius); text-align: center; font-size: 0.85rem;">
+                <span id="visitor-msg">Mode Visiteur</span>
+                <button id="exit-visitor-btn" class="btn small primary" style="margin-top: 5px; padding: 2px 8px; font-size: 0.75rem; width: 100%;">Retour à mon profil</button>
               </div>
             </div>
 
@@ -108,22 +124,27 @@
           <!-- MAIN CONTENT -->
           <main class="main-content">
 
-            <!-- Compétences -->
-            <div class="panel">
-              <h2>Compétences Revendiquées</h2>
-              <div id="skills-list-container">
-                <!-- Compétences générées ici -->
-              </div>
-            </div>
-
             <!-- Projets -->
             <div class="panel">
               <div class="section-header">
-                <h2>Inventaire Projets <span class="counter">(<span id="project-count">0</span>/5)</span></h2>
+                <h2>📁 Inventaire Projets</h2>
                 <button class="btn secondary" id="add-project-btn">+ Ajouter</button>
               </div>
-              <div class="projects-grid" id="inventory-grid">
-                <!-- Projets générés ici -->
+              <div id="project-grid-root">
+                <!-- Projets épinglés + Accordéon rendu ici -->
+              </div>
+            </div>
+
+            <!-- Compétences (Calculées) -->
+            <div class="panel">
+              <h2>📊 Compétences</h2>
+              <div style="display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;" class="skills-grid-container">
+                <div id="skills-list-container">
+                  <!-- Compétences générées ici -->
+                </div>
+                <div class="radar-container" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 10px;">
+                  <canvas id="skillsRadar"></canvas>
+                </div>
               </div>
             </div>
 
@@ -133,41 +154,14 @@
 
     </div>
 
-    <!-- ====== MODAL PROJET ====== -->
-    <div id="project-modal" class="modal hidden">
-      <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2 id="modal-title">Ajouter un projet</h2>
-        <form id="project-form">
-          <input type="hidden" id="proj-id" />
-          <div class="form-group">
-            <label for="proj-name">Nom du projet</label>
-            <input type="text" id="proj-name" required />
-          </div>
-          <div class="form-group">
-            <label for="proj-desc">Description courte</label>
-            <textarea id="proj-desc" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="proj-course">Cours associé</label>
-            <input type="text" id="proj-course" placeholder="Ex : Design Graphique II" />
-          </div>
-          <div class="form-group">
-            <label>Compétences mobilisées <small>(Preuves pour vos claims)</small></label>
-            <div class="skills-checkboxes" id="proj-skills-checkboxes">
-              <!-- Checkboxes générées dynamiquement -->
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="proj-link">Lien (URL)</label>
-            <input type="url" id="proj-link" placeholder="https://" />
-          </div>
-          <button type="submit" class="btn primary">Enregistrer</button>
-        </form>
+    <!-- ====== POP-UP MODAL PROJET (DÉTAILS / ÉDITION / CRÉATION) ====== -->
+    <div id="project-detail-modal" class="modal hidden">
+      <div class="modal-content" id="project-modal-body">
+        <!-- Rendu dynamiquement par ProjectModal.js -->
       </div>
     </div>
 
-    <!-- ====== MODAL PROFIL ====== -->
+    <!-- ====== MODAL PROFIL (ÉDITION) ====== -->
     <div id="profile-modal" class="modal hidden">
       <div class="modal-content">
         <span class="close-modal close-profile-modal">&times;</span>
@@ -180,6 +174,14 @@
           <div class="form-group">
             <label for="prof-bio">Bio courte</label>
             <textarea id="prof-bio" rows="3" placeholder="Quelques mots sur vos intérêts..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Intérêts (Tags)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="new-interest-input" placeholder="Ex: 3D, Web, Design" />
+              <button type="button" id="add-interest-btn" class="btn secondary">Ajouter</button>
+            </div>
+            <div id="edit-interests-list" class="tags" style="margin-top: 10px; justify-content: flex-start;"></div>
           </div>
           <button type="submit" class="btn primary">Enregistrer</button>
         </form>
