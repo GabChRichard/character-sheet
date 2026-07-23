@@ -1,5 +1,6 @@
 // src/services/SupabaseService.js
 import { createClient } from '@supabase/supabase-js'
+import { compressImage } from '../utils/imageCompressor.js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -213,29 +214,31 @@ export class SupabaseService {
     return true;
   }
 
-  // Upload d'image de profil vers Supabase Storage (bucket "avatars")
+  // Upload d'image de profil vers Supabase Storage (bucket "avatars").
+  // L'image est recompressée côté client et le chemin est fixe par étudiant
+  // (upsert), pour que les ré-uploads remplacent l'ancien avatar au lieu
+  // d'accumuler des fichiers orphelins dans le storage.
   async uploadAvatar(studentCode, file) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${studentCode}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const compressed = await compressImage(file);
+    const filePath = `avatars/${studentCode}.jpg`;
 
-    // Uploader le fichier
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, compressed, { upsert: true, contentType: 'image/jpeg' });
 
     if (uploadError) {
-      // Si le bucket n'existe pas, on tente de le créer ou on signale l'erreur
       console.error("uploadAvatar storage upload error:", uploadError);
       throw uploadError;
     }
 
-    // Récupérer l'URL publique du fichier
+    // Récupérer l'URL publique du fichier. Le chemin étant fixe, on ajoute un
+    // paramètre anti-cache pour éviter qu'un navigateur affiche l'ancienne
+    // image mise en cache après un ré-upload.
     const { data } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
 
-    return data.publicUrl;
+    return `${data.publicUrl}?v=${Date.now()}`;
   }
 
 
