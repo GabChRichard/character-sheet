@@ -7,7 +7,10 @@ import { renderStudentList } from './components/admin/StudentList.js';
 import { renderBadgeToggles, getEditedBadges } from './components/admin/BadgeToggle.js';
 import { generateRandomStudentCode } from './components/admin/CodeGenerator.js';
 import { computeSkillScores } from './utils/scoreCalculator.js';
+import { startIdleLogout } from './utils/idleLogout.js';
 import skillsData from './data/skills.json';
+
+startIdleLogout(db, 60 * 60 * 1000); // 1h d'inactivité
 
 let currentStudentCode = null;
 let currentAdmin = null; // { username, displayName, role }

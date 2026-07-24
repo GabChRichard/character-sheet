@@ -11,7 +11,10 @@ import { renderLevelBar } from './components/student/LevelBar.js';
 import { renderSoftSkillsEditor } from './components/student/SoftSkillsEditor.js';
 import { computeSkillScores, calculateGlobalScore } from './utils/scoreCalculator.js';
 import { resolveGlobalTitle } from './utils/titleResolver.js';
+import { startIdleLogout } from './utils/idleLogout.js';
 import config from './data/config.json';
+
+startIdleLogout(db, 60 * 60 * 1000); // 1h d'inactivité
 
 console.log("Feuille de Personnage - Vue Étudiant initialisée (v5.0).");
 

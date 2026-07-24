@@ -5,7 +5,17 @@ import { compressImage } from '../utils/imageCompressor.js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// PKCE : après connexion GitHub, l'URL de retour ne contient qu'un code
+// d'échange à usage unique (jamais les tokens eux-mêmes), échangé aussitôt
+// par le SDK via une requête serveur — rien d'exploitable ne transite par
+// l'URL/l'historique du navigateur.
+//
+// sessionStorage (plutôt que le localStorage par défaut) : la session est
+// effacée à la fermeture de l'onglet/navigateur, au lieu de survivre
+// indéfiniment — important sur les postes partagés (labo informatique).
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { flowType: 'pkce', storage: window.sessionStorage }
+})
 
 export class SupabaseService {
   // --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
