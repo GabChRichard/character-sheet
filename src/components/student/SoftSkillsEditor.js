@@ -1,75 +1,44 @@
 // src/components/student/SoftSkillsEditor.js
 import { db } from '../../services/SupabaseService.js';
+import softSkillCategories from '../../data/softSkills.json';
 
 export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
   const container = document.getElementById('soft-skills-container');
   if (!container) return;
 
-  const softSkills = profile.softSkills || [];
+  const selected = profile.softSkills || [];
 
   container.innerHTML = `
     <div class="section-header" style="margin-bottom: 12px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
-      <h2 style="border: none; margin: 0;">🤝 Savoir-être</h2>
+      <h2 style="border: none; margin: 0;">Savoir-être</h2>
     </div>
-    <div id="soft-skills-list" style="display: flex; flex-direction: column; gap: 8px;">
-      ${softSkills.map((skill, index) => `
-        <div class="soft-skill-item" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card, rgba(255,255,255,0.02)); border: 1px solid var(--border-color); border-radius: var(--radius);">
-          <span class="soft-skill-text">${skill}</span>
-          ${isOwner ? `
-            <div style="display: flex; gap: 4px;">
-              <button class="btn icon-btn edit-soft-skill" data-index="${index}" title="Modifier" style="font-size: 0.85rem; padding: 2px;">✏️</button>
-              <button class="btn icon-btn delete-soft-skill" data-index="${index}" title="Supprimer" style="font-size: 0.85rem; padding: 2px;">×</button>
-            </div>
-          ` : ''}
-        </div>
-      `).join('')}
+    <div class="tags" id="soft-skills-tags" style="justify-content: flex-start;">
+      ${selected.length === 0 ? '<span style="font-size: 0.8rem; color: var(--text-muted);">Aucun savoir-être sélectionné</span>' : ''}
     </div>
-    ${isOwner ? `
-      <button id="add-soft-skill-btn" class="btn secondary small" style="width: 100%; margin-top: 10px; font-size: 0.8rem; padding: 6px;">+ Ajouter un savoir-être</button>
-      <div id="soft-skill-input-container" class="hidden" style="margin-top: 10px; display: flex; gap: 8px;">
-        <input type="text" id="new-soft-skill-input" placeholder="Ex: Travail en équipe" style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: var(--radius); font-size: 0.85rem; background: var(--bg-card); color: var(--text-main);" />
-        <button id="save-soft-skill-btn" class="btn primary small" style="padding: 6px 12px; font-size: 0.85rem;">Ajouter</button>
-      </div>
-    ` : ''}
+    ${isOwner ? '<button type="button" id="add-soft-skill-btn" class="btn secondary small" style="width: 100%; margin-top: 10px; font-size: 0.8rem; padding: 6px;">+ Ajouter</button>' : ''}
   `;
+
+  const tagsEl = document.getElementById('soft-skills-tags');
+  if (tagsEl) {
+    selected.forEach(skill => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.innerHTML = isOwner
+        ? `${skill} <span class="remove-soft-skill" data-skill="${skill}" style="cursor:pointer; margin-left:5px; font-weight:bold;">&times;</span>`
+        : skill;
+      tagsEl.appendChild(span);
+    });
+  }
 
   if (!isOwner) return;
 
-  const addBtn = document.getElementById('add-soft-skill-btn');
-  const inputContainer = document.getElementById('soft-skill-input-container');
-  const newFieldName = document.getElementById('new-soft-skill-input');
-  const saveBtn = document.getElementById('save-soft-skill-btn');
-
-  addBtn?.addEventListener('click', () => {
-    addBtn.classList.add('hidden');
-    inputContainer.classList.remove('hidden');
-    newFieldName.focus();
-  });
-
-  const saveAction = async () => {
-    const text = newFieldName.value.trim();
-    if (!text) return;
-    const updatedSkills = [...softSkills, text];
-    try {
-      await db.updateStudentProfile({ softSkills: updatedSkills });
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      alert("Erreur lors de l'ajout: " + err.message);
-    }
-  };
-
-  saveBtn?.addEventListener('click', saveAction);
-  newFieldName?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') saveAction();
-  });
-
-  // Suppression
-  container.querySelectorAll('.delete-soft-skill').forEach(btn => {
+  // Suppression instantanée d'un savoir-être depuis le panneau
+  container.querySelectorAll('.remove-soft-skill').forEach(btn => {
     btn.addEventListener('click', async (e) => {
-      const index = parseInt(e.currentTarget.dataset.index, 10);
-      const updatedSkills = softSkills.filter((_, idx) => idx !== index);
+      const skill = e.currentTarget.dataset.skill;
+      const updated = selected.filter(s => s !== skill);
       try {
-        await db.updateStudentProfile({ softSkills: updatedSkills });
+        await db.updateStudentProfile({ softSkills: updated });
         if (onUpdate) onUpdate();
       } catch (err) {
         alert("Erreur lors de la suppression: " + err.message);
@@ -77,25 +46,55 @@ export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
     });
   });
 
-  // Édition
-  container.querySelectorAll('.edit-soft-skill').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const index = parseInt(e.currentTarget.dataset.index, 10);
-      const currentText = softSkills[index];
-      const newText = prompt("Modifier le savoir-être :", currentText);
-      if (newText === null) return;
-      const text = newText.trim();
-      if (!text) return;
+  document.getElementById('add-soft-skill-btn')?.addEventListener('click', () => {
+    openCatalogModal(selected, onUpdate);
+  });
+}
 
-      const updatedSkills = [...softSkills];
-      updatedSkills[index] = text;
+function openCatalogModal(selected, onUpdate) {
+  const modal = document.getElementById('soft-skills-modal');
+  const catalog = document.getElementById('soft-skills-catalog');
+  if (!modal || !catalog) return;
 
-      try {
-        await db.updateStudentProfile({ softSkills: updatedSkills });
-        if (onUpdate) onUpdate();
-      } catch (err) {
-        alert("Erreur lors de la modification: " + err.message);
-      }
-    });
+  const selectedSet = new Set(selected);
+
+  catalog.innerHTML = `
+    <div class="soft-skills-list">
+      ${softSkillCategories.map(cat => `
+        <div class="soft-skills-category">
+          <div class="soft-skills-category-title">${cat.label}</div>
+          ${cat.items.map(item => `
+            <label class="soft-skill-item">
+              <input type="checkbox" name="soft-skill-catalog" value="${item}" ${selectedSet.has(item) ? 'checked' : ''}>
+              <span>${item}</span>
+            </label>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+
+  // Remplacer les boutons statiques (clonage) pour éviter d'empiler des
+  // listeners à chaque ouverture du modal (le modal reste dans le DOM entre
+  // deux rendus de SoftSkillsEditor, contrairement au reste du panneau).
+  const closeBtn = document.querySelector('.close-soft-skills-modal');
+  const newCloseBtn = closeBtn.cloneNode(true);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+  newCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+  const saveBtn = document.getElementById('save-soft-skills-btn');
+  const newSaveBtn = saveBtn.cloneNode(true);
+  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+  newSaveBtn.addEventListener('click', async () => {
+    const updated = Array.from(catalog.querySelectorAll('input[name="soft-skill-catalog"]:checked')).map(cb => cb.value);
+    try {
+      await db.updateStudentProfile({ softSkills: updated });
+      modal.classList.add('hidden');
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      alert("Erreur lors de la mise à jour: " + err.message);
+    }
   });
 }

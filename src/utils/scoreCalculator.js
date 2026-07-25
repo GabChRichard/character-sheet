@@ -1,4 +1,9 @@
 // src/utils/scoreCalculator.js
+import { getSkillId, getSkillComplexity } from './skillsIndex.js';
+
+// Bonus fixe ajouté au score d'une compétence lorsqu'elle est marquée
+// "complexe" (niveau 2) dans un projet, en plus de sa contribution de base.
+const COMPLEXITY_BONUS = 5;
 
 /**
  * Calcule les scores pour chaque compétence en fonction des projets et des endossements.
@@ -24,9 +29,11 @@ export function computeSkillScores(projects, endorsements) {
     // Boost des endossements sur ce projet
     const endorsementBoost = projectEndorsements * 10;
 
-    for (const skillId of (project.skills || [])) {
+    for (const entry of (project.skills || [])) {
+      const skillId = getSkillId(entry);
+      const complexityBonus = getSkillComplexity(entry) === 2 ? COMPLEXITY_BONUS : 0;
       if (!scores[skillId]) scores[skillId] = 0;
-      scores[skillId] += projectValue + endorsementBoost;
+      scores[skillId] += projectValue + endorsementBoost + complexityBonus;
     }
   }
 

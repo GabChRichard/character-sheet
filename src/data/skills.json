@@ -1,72 +1,62 @@
-{
-  "web": {
-    "id": "web",
-    "label": "Web",
-    "icon": "🌐",
-    "courses": ["Web 1", "Web 2", "Web 3", "Web 5"],
-    "description": "Création d'interfaces web, intégration front-end, développement interactif et déploiement."
+[
+  {
+    "id": "planifAnalyse",
+    "label": "Planif et analyse",
+    "shortLabel": "Planif",
+    "icon": "🧭",
+    "items": [
+      { "id": "ideation", "label": "Explorer et générer des idées (idéation, moodboard, concept)" },
+      { "id": "scenarisation", "label": "Rédiger un scénario ou un contenu" },
+      { "id": "faisabilite", "label": "Analyser la faisabilité d'un mandat" },
+      { "id": "planificationProjet", "label": "Planifier les étapes et les ressources d'un projet" }
+    ]
   },
-  "animation": {
-    "id": "animation",
-    "label": "Animation",
-    "icon": "🎬",
-    "courses": ["Animation 2D", "Animation 3D"],
-    "description": "Principes d'animation, mouvement, et production d'animations vectorielles ou tramées."
-  },
-  "modelisation3d": {
-    "id": "modelisation3d",
-    "label": "3D",
-    "icon": "🧊",
-    "courses": ["Modélisation 3D", "Animation 3D"],
-    "description": "Création de modèles tridimensionnels, textures, éclairage et rendu 3D."
-  },
-  "designGraphique": {
-    "id": "designGraphique",
-    "label": "Design graphique",
+  {
+    "id": "design",
+    "label": "Design",
+    "shortLabel": "Design",
     "icon": "🎨",
-    "courses": ["Design graphique"],
-    "description": "Composition visuelle, typographie, identité graphique et mise en page."
+    "items": [
+      { "id": "designInterface", "label": "Concevoir un design d'interface" },
+      { "id": "identiteVisuelle", "label": "Créer une identité visuelle cohérente" },
+      { "id": "interfaceResponsive", "label": "Adapter une interface à différents écrans" },
+      { "id": "experienceUtilisateur", "label": "Penser l'expérience et le parcours de l'utilisateur" }
+    ]
   },
-  "imageNumerique": {
-    "id": "imageNumerique",
-    "label": "Image numérique",
-    "icon": "📷",
-    "courses": ["Photographie", "Illustration numérique"],
-    "description": "Captation photographique, retouche, illustration et traitement de l'image fixe."
-  },
-  "video": {
-    "id": "video",
-    "label": "Vidéo",
-    "icon": "📹",
-    "courses": ["Vidéo 1", "Vidéo 2"],
-    "description": "Captation, montage, étalonnage et post-production vidéo."
-  },
-  "conceptionSonore": {
-    "id": "conceptionSonore",
-    "label": "Conception sonore",
-    "icon": "🎵",
-    "courses": ["Audio 1"],
-    "description": "Enregistrement, mixage, sound design et intégration audio dans des productions multimédias."
-  },
-  "programmation": {
+  {
     "id": "programmation",
     "label": "Programmation",
+    "shortLabel": "Prog.",
     "icon": "💻",
-    "courses": ["Programmation interactive", "Interactivité ludique", "Objets interactifs"],
-    "description": "Développement d'expériences interactives, jeux, interfaces physiques et logique de programmation."
+    "items": [
+      { "id": "htmlCss", "label": "Baliser et styliser du contenu (HTML/CSS)" },
+      { "id": "interactiviteJs", "label": "Programmer l'interactivité (JavaScript)" },
+      { "id": "gestionDonnees", "label": "Gérer des données (CMS, API, base de données)" },
+      { "id": "objetsInteractifs", "label": "Connecter des objets interactifs (capteurs, microcontrôleurs)" }
+    ]
   },
-  "installationInteractive": {
-    "id": "installationInteractive",
-    "label": "Installation interactive",
-    "icon": "🏛️",
-    "courses": ["Œuvres et dispositifs multimédias en exposition", "Installation multimédia", "Expérience multimédia"],
-    "description": "Conception et déploiement d'œuvres immersives, d'installations physiques et d'expériences en espace public ou muséal."
+  {
+    "id": "traitementMedias",
+    "label": "Traitement de médias",
+    "shortLabel": "Médias",
+    "icon": "🎬",
+    "items": [
+      { "id": "illustrationNumerique", "label": "Illustrer numériquement (vectoriel et matriciel)" },
+      { "id": "animation2d3d", "label": "Modéliser ou animer en 2D/3D" },
+      { "id": "montageSon", "label": "Enregistrer et monter du son" },
+      { "id": "montageVideo", "label": "Tourner et monter une vidéo" }
+    ]
   },
-  "redaction": {
-    "id": "redaction",
-    "label": "Rédaction",
-    "icon": "✍️",
-    "courses": ["Domaines multimédias", "Conception d'une expérience multimédia", "Préparation au milieu de travail"],
-    "description": "Rédaction de contenus écrits pour des productions multimédias : scripts, synopsis, textes web, narration et documentation."
+  {
+    "id": "gestionProjet",
+    "label": "Gestion de projet",
+    "shortLabel": "Gestion",
+    "icon": "📋",
+    "items": [
+      { "id": "travailEquipe", "label": "Travailler en équipe autogérée" },
+      { "id": "controleQualite", "label": "Contrôler la qualité d'un produit fini" },
+      { "id": "documentation", "label": "Documenter et archiver son travail" },
+      { "id": "presentation", "label": "Présenter et exposer ses créations" }
+    ]
   }
-}
+]

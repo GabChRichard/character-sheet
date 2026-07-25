@@ -33,7 +33,13 @@ export function renderBadgeWall(studentBadges) {
     
     div.title = tooltip;
     div.innerHTML = badge.icon;
-    
+
+    // Les icônes multi-glyphes (ex: "⭐⭐⭐") débordent du cercle si affichées à
+    // taille fixe : on réduit la police proportionnellement au nombre de glyphes.
+    const glyphCount = Array.from(badge.icon).length;
+    if (glyphCount === 2) div.style.fontSize = '1.05rem';
+    else if (glyphCount >= 3) div.style.fontSize = '0.68rem';
+
     grid.appendChild(div);
   });
 }

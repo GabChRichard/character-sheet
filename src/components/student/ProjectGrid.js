@@ -1,7 +1,7 @@
 // src/components/student/ProjectGrid.js
 import { openProjectModal } from './ProjectModal.js';
 import { renderProjectForm } from './ProjectForm.js';
-import skillsData from '../../data/skills.json';
+import { skillsIndex, getSkillId, getSkillComplexity } from '../../utils/skillsIndex.js';
 
 export function renderProjectGrid(projects, isOwner, visitorCode, currentStudentCode, onUpdate) {
   const root = document.getElementById('project-grid-root');
@@ -20,7 +20,7 @@ export function renderProjectGrid(projects, isOwner, visitorCode, currentStudent
     <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
       📌 Projets Épinglés (${pinnedProjects.length}/3)
     </h3>
-    <div class="pinned-projects-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 25px;">
+    <div class="pinned-projects-grid">
       <!-- Inséré dynamiquement -->
     </div>
   `;
@@ -109,21 +109,26 @@ function createProjectCard(proj, isPinned) {
   card.className = `project-card filled ${isPinned ? 'pinned-card' : ''}`;
   card.style.position = 'relative';
 
-  const weight = proj.skills ? proj.skills.length : 0;
+  const weight = (proj.skills || []).reduce((sum, s) => sum + getSkillComplexity(s), 0);
   const dots = "●".repeat(Math.min(5, weight));
 
   // Afficher les 3 premières icônes de compétences
-  const skillIcons = (proj.skills || []).slice(0, 3).map(skillId => {
-    const sk = skillsData[skillId];
+  const skillIcons = (proj.skills || []).slice(0, 3).map(entry => {
+    const sk = skillsIndex[getSkillId(entry)];
     return sk ? `<span title="${sk.label}">${sk.icon}</span>` : '';
   }).join(' ');
 
+  const thumbnail = proj.thumbnail_url
+    ? `<div class="project-thumbnail" style="background-image: url('${proj.thumbnail_url}');"></div>`
+    : `<div class="project-thumbnail project-thumbnail-placeholder"></div>`;
+
   card.innerHTML = `
+    ${thumbnail}
     ${isPinned ? '<div class="project-valid-icon" style="background: rgba(251, 191, 36, 0.1); color: var(--gold-color); border: 1px solid var(--gold-color);">📌 Épinglé</div>' : ''}
     <div class="project-name" style="margin-top: ${isPinned ? '15px' : '0'};">${proj.name}</div>
     <div class="project-course">${proj.course || 'Projet'}</div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-      <div class="project-value" title="Valeur : ${weight} compétences">${dots}</div>
+      <div class="project-value" title="Valeur : ${weight} (somme des complexités)">${dots}</div>
       <div class="project-skills-icons" style="font-size: 0.95rem; display: flex; gap: 4px;">${skillIcons}</div>
     </div>
   `;

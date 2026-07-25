@@ -1,0 +1,56 @@
+[
+  {
+    "id": "collaboration",
+    "label": "Collaboration",
+    "items": [
+      "Travail d'équipe",
+      "Communication claire",
+      "Écoute active",
+      "Esprit constructif face à la critique",
+      "Partage des connaissances"
+    ]
+  },
+  {
+    "id": "organisation",
+    "label": "Organisation",
+    "items": [
+      "Gestion du temps",
+      "Autonomie",
+      "Sens des priorités",
+      "Rigueur",
+      "Respect des échéances"
+    ]
+  },
+  {
+    "id": "creativite",
+    "label": "Créativité",
+    "items": [
+      "Créativité",
+      "Curiosité",
+      "Débrouillardise",
+      "Pensée critique",
+      "Capacité d'adaptation"
+    ]
+  },
+  {
+    "id": "professionnalisme",
+    "label": "Professionnalisme",
+    "items": [
+      "Fiabilité",
+      "Ponctualité",
+      "Éthique de travail",
+      "Souci du détail",
+      "Sens des responsabilités"
+    ]
+  },
+  {
+    "id": "communication",
+    "label": "Communication",
+    "items": [
+      "Aisance à présenter son travail",
+      "Vulgarisation",
+      "Réception de feedback",
+      "Capacité à donner du feedback constructif"
+    ]
+  }
+]

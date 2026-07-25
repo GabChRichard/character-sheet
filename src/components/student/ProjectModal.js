@@ -1,6 +1,6 @@
 // src/components/student/ProjectModal.js
 import { db } from '../../services/SupabaseService.js';
-import skillsData from '../../data/skills.json';
+import { skillsIndex, getSkillId, getSkillComplexity } from '../../utils/skillsIndex.js';
 import { renderProjectForm } from './ProjectForm.js';
 
 export function openProjectModal(project, isOwner, visitorCode, currentStudentCode, onActionCompleted) {
@@ -22,7 +22,8 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
   const projectEndorsements = allEndorsements.filter(e => e.project_id === project.id);
   const hasEndorsed = visitorCode ? projectEndorsements.some(e => e.from_code === visitorCode) : false;
 
-  const dots = "●".repeat(project.skills ? Math.min(5, project.skills.length) : 1);
+  const skillWeight = (project.skills || []).reduce((sum, s) => sum + getSkillComplexity(s), 0);
+  const dots = "●".repeat(project.skills ? Math.min(5, skillWeight) : 1);
 
   body.innerHTML = `
     <span class="close-modal" id="close-project-modal">&times;</span>
@@ -41,9 +42,11 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
     <div style="margin-bottom: 20px;">
       <h3 style="font-size: 0.95rem; margin-bottom: 5px; color: var(--text-main);">Compétences mobilisées</h3>
       <div class="tags" style="justify-content: flex-start; gap: 6px;">
-        ${(project.skills || []).map(skillId => {
-          const sk = skillsData[skillId];
-          return sk ? `<span class="tag">${sk.icon} ${sk.label}</span>` : `<span class="tag">${skillId}</span>`;
+        ${(project.skills || []).map(entry => {
+          const skillId = getSkillId(entry);
+          const sk = skillsIndex[skillId];
+          const complexityTag = getSkillComplexity(entry) === 2 ? ' · Complexe' : '';
+          return sk ? `<span class="tag">${sk.icon} ${sk.label}${complexityTag}</span>` : `<span class="tag">${skillId}${complexityTag}</span>`;
         }).join('')}
       </div>
       <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">

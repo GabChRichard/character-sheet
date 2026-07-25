@@ -11,5 +11,6 @@ export class Project {
     this.skill_weight = data.skill_weight || this.skills.length || 1;
     this.semester = data.semester || "";
     this.link = data.link || "";
+    this.thumbnail_url = data.thumbnail_url || "";
   }
 }

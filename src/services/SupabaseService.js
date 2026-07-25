@@ -83,6 +83,22 @@ export class SupabaseService {
     return data;
   }
 
+  // Recherche d'un profil par alias (insensible à la casse). L'alias est
+  // garanti unique en base (index unique sur lower(alias), migration v7),
+  // donc au plus un résultat.
+  async searchStudentByAlias(alias) {
+    const { data, error } = await supabase
+      .from('students')
+      .select('code, profile, badges, updated_at, updated_by')
+      .ilike('alias', alias)
+      .maybeSingle();
+    if (error) {
+      console.error("searchStudentByAlias error:", error);
+      return null;
+    }
+    return data;
+  }
+
   async getProjects(studentCode) {
     // Trier par pinned DESC (projets épinglés en premier) puis pin_order ASC, puis par date de création
     const { data, error } = await supabase
@@ -140,7 +156,8 @@ export class SupabaseService {
         course: projectData.course,
         semester: projectData.semester || '',
         skills: projectData.skills || [],
-        link: projectData.link || ''
+        link: projectData.link || '',
+        thumbnail_url: projectData.thumbnailUrl || ''
       })
       .select()
       .single();
@@ -160,7 +177,8 @@ export class SupabaseService {
         course: projectData.course,
         semester: projectData.semester || '',
         skills: projectData.skills || [],
-        link: projectData.link || ''
+        link: projectData.link || '',
+        ...(projectData.thumbnailUrl !== undefined && { thumbnail_url: projectData.thumbnailUrl })
       })
       .eq('id', projectId)
       .select()
@@ -246,6 +264,30 @@ export class SupabaseService {
     // image mise en cache après un ré-upload.
     const { data } = supabase.storage
       .from('avatars')
+      .getPublicUrl(filePath);
+
+    return `${data.publicUrl}?v=${Date.now()}`;
+  }
+
+  // Upload de la miniature d'un projet vers Supabase Storage (bucket
+  // "project-thumbnails"). Même logique que uploadAvatar (compression client,
+  // upsert sur un chemin fixe par projet), mais avec un cadrage plus large
+  // (miniature rectangulaire de carte plutôt qu'un avatar carré).
+  async uploadProjectThumbnail(studentCode, projectId, file) {
+    const compressed = await compressImage(file, 800, 0.75);
+    const filePath = `project-thumbnails/${studentCode}/${projectId}.jpg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('project-thumbnails')
+      .upload(filePath, compressed, { upsert: true, contentType: 'image/jpeg' });
+
+    if (uploadError) {
+      console.error("uploadProjectThumbnail storage upload error:", uploadError);
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('project-thumbnails')
       .getPublicUrl(filePath);
 
     return `${data.publicUrl}?v=${Date.now()}`;

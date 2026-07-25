@@ -1,34 +1,30 @@
 // src/components/student/ProfileCard.js
 import { db } from '../../services/SupabaseService.js';
 
+function renderAvatarInto(el, avatarUrl) {
+  if (!el) return;
+  if (avatarUrl) {
+    el.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`;
+  } else {
+    el.innerText = "🧙‍♂️";
+  }
+}
+
 export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   const aliasEl = document.getElementById('student-alias');
   const bioEl = document.getElementById('student-bio');
   const tagsEl = document.getElementById('student-interests');
   const avatarEl = document.getElementById('student-avatar');
   const editProfileBtn = document.getElementById('edit-profile-btn');
-  const avatarUploadInput = document.getElementById('avatar-upload');
-  const avatarOverlay = document.querySelector('.avatar-edit-overlay');
 
   if (aliasEl) aliasEl.innerText = profile.alias || "Étudiant Anonyme";
   if (bioEl) bioEl.innerText = profile.bio ? `"${profile.bio}"` : "Aucune bio";
-  
-  if (avatarEl) {
-    if (profile.avatarUrl) {
-      avatarEl.innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />`;
-    } else {
-      avatarEl.innerText = "🧙‍♂️";
-    }
-  }
+  renderAvatarInto(avatarEl, profile.avatarUrl);
 
-  // Masquer les boutons d'édition si on n'est pas le propriétaire
+  // Masquer le bouton d'édition si on n'est pas le propriétaire
   if (editProfileBtn) {
     if (isOwner) editProfileBtn.classList.remove('hidden');
     else editProfileBtn.classList.add('hidden');
-  }
-  if (avatarOverlay) {
-    if (isOwner) avatarOverlay.style.display = 'flex';
-    else avatarOverlay.style.display = 'none';
   }
 
   if (tagsEl) {
@@ -46,33 +42,42 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
     }
   }
 
-  // Si c'est le propriétaire, configurer les formulaires d'édition
+  // Si c'est le propriétaire, configurer le formulaire d'édition (profil + avatar)
   if (isOwner && onUpdate) {
-    // Gestion de l'upload de photo de profil
-    avatarUploadInput?.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        const code = document.getElementById('student-code-input').value;
-        const publicUrl = await db.uploadAvatar(code, file);
-        await db.updateStudentProfile({ avatarUrl: publicUrl });
-        if (onUpdate) onUpdate();
-      } catch (err) {
-        alert("Erreur lors de l'upload de l'avatar: " + err.message);
-      }
-    });
-
     // Préparation de la modale d'édition
     editProfileBtn?.addEventListener('click', () => {
       const modal = document.getElementById('profile-modal');
       const aliasInput = document.getElementById('prof-alias');
+      const aliasError = document.getElementById('prof-alias-error');
       const bioInput = document.getElementById('prof-bio');
       const interestList = document.getElementById('edit-interests-list');
+      const avatarPreview = document.getElementById('prof-avatar-preview');
+      const avatarInput = document.getElementById('prof-avatar-input');
 
       if (aliasInput) aliasInput.value = profile.alias || '';
+      if (aliasError) aliasError.classList.add('hidden');
       if (bioInput) bioInput.value = profile.bio || '';
-      
+      renderAvatarInto(avatarPreview, profile.avatarUrl);
+
+      // Upload immédiat de la photo dès sa sélection
+      if (avatarInput) {
+        avatarInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          try {
+            const code = document.getElementById('student-code-input').value;
+            const publicUrl = await db.uploadAvatar(code, file);
+            profile.avatarUrl = publicUrl;
+            await db.updateStudentProfile({ avatarUrl: publicUrl });
+            renderAvatarInto(avatarPreview, publicUrl);
+            renderAvatarInto(avatarEl, publicUrl);
+          } catch (err) {
+            alert("Erreur lors de l'upload de l'avatar: " + err.message);
+          }
+        };
+      }
+
       const renderEditInterests = () => {
         if (!interestList) return;
         interestList.innerHTML = '';
@@ -121,6 +126,7 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
           e.preventDefault();
           const newAlias = document.getElementById('prof-alias').value.trim();
           const newBio = document.getElementById('prof-bio').value.trim();
+          if (aliasError) aliasError.classList.add('hidden');
           try {
             await db.updateStudentProfile({
               alias: newAlias,
@@ -130,7 +136,12 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
             modal.classList.add('hidden');
             if (onUpdate) onUpdate();
           } catch (err) {
-            alert("Erreur lors de la mise à jour: " + err.message);
+            if (err.code === '23505' && aliasError) {
+              aliasError.innerText = "Cet alias est déjà pris, choisis-en un autre.";
+              aliasError.classList.remove('hidden');
+            } else {
+              alert("Erreur lors de la mise à jour: " + err.message);
+            }
           }
         };
       }

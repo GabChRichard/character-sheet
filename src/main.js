@@ -1,10 +1,10 @@
 // src/main.js
 import './style.css';
 
-import html2pdf from 'html2pdf.js';
 import { db } from './services/SupabaseService.js';
 import { renderProfileCard } from './components/student/ProfileCard.js';
 import { renderSkillPanel } from './components/student/SkillPanel.js';
+import { renderSkillRadar } from './components/student/SkillRadar.js';
 import { renderProjectGrid } from './components/student/ProjectGrid.js';
 import { renderBadgeWall } from './components/student/BadgeWall.js';
 import { renderLevelBar } from './components/student/LevelBar.js';
@@ -20,6 +20,8 @@ console.log("Feuille de Personnage - Vue Étudiant initialisée (v5.0).");
 
 let myCode = '';
 let currentViewedCode = ''; // Code de l'étudiant visité (si mode visiteur)
+let lastProjects = [];
+let lastEndorsements = [];
 
 async function loadStudentData(code, isVisitor = false) {
   currentViewedCode = code;
@@ -33,10 +35,13 @@ async function loadStudentData(code, isVisitor = false) {
   if (student.profile.theme) {
     document.documentElement.dataset.theme = student.profile.theme;
   }
+  updateActiveThemeButton();
 
   // Charger les projets et endossements
   const projects = await db.getProjects(code);
   const endorsements = await db.getStudentEndorsements(code);
+  lastProjects = projects;
+  lastEndorsements = endorsements;
 
   // Calculer les scores des compétences
   const skillScores = computeSkillScores(projects, endorsements);
@@ -59,6 +64,7 @@ async function loadStudentData(code, isVisitor = false) {
   renderSoftSkillsEditor(student.profile, isOwner, () => loadStudentData(code, isVisitor));
   renderProjectGrid(projects, isOwner, isVisitor ? myCode : null, code, () => loadStudentData(code, isVisitor));
   renderSkillPanel(projects, endorsements);
+  renderSkillRadar(projects, endorsements);
 
   // Mettre à jour l'état du mode visiteur dans l'interface
   const visitorIndicator = document.getElementById('visitor-mode-indicator');
@@ -96,7 +102,9 @@ async function showCharacterSheet(code) {
   document.getElementById('student-code-input').value = code;
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('no-account-screen').classList.add('hidden');
-  document.getElementById('character-sheet').classList.remove('hidden');
+  const sheet = document.getElementById('character-sheet');
+  sheet.classList.remove('hidden');
+  sheet.classList.add('anim-fade-in');
   await loadStudentData(code, false);
 }
 
@@ -138,36 +146,48 @@ document.getElementById('student-logout-btn')?.addEventListener('click', async (
 bootstrap();
 
 // Sélecteurs de thèmes
-document.querySelectorAll('button[data-theme-target]').forEach(btn => {
+const themeButtons = document.querySelectorAll('button[data-theme-target]');
+
+function updateActiveThemeButton() {
+  const currentTheme = document.documentElement.dataset.theme;
+  themeButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeTarget === currentTheme);
+  });
+}
+
+themeButtons.forEach(btn => {
   btn.addEventListener('click', async (e) => {
     const theme = e.currentTarget.dataset.themeTarget;
     document.documentElement.dataset.theme = theme;
-    
+    updateActiveThemeButton();
+    renderSkillRadar(lastProjects, lastEndorsements);
+
     // Si propriétaire, sauvegarder dans son profil
     if (currentViewedCode === myCode && myCode) {
       await db.updateStudentProfile({ theme: theme });
     }
   });
 });
+updateActiveThemeButton();
 
 // Visiter un pair
 document.getElementById('search-peer-btn')?.addEventListener('click', async () => {
-  const peerCode = document.getElementById('peer-code-input').value.trim();
-  if (!peerCode) return;
+  const peerAlias = document.getElementById('peer-alias-input').value.trim();
+  if (!peerAlias) return;
 
-  if (peerCode === myCode) {
+  const peer = await db.searchStudentByAlias(peerAlias);
+  if (!peer) {
+    alert("Aucun étudiant trouvé avec cet alias.");
+    return;
+  }
+
+  if (peer.code === myCode) {
     alert("Vous êtes déjà sur votre profil.");
     return;
   }
 
-  const peer = await db.getStudent(peerCode);
-  if (!peer) {
-    alert("Aucun étudiant trouvé avec ce code.");
-    return;
-  }
-
-  document.getElementById('peer-code-input').value = '';
-  await loadStudentData(peerCode, true);
+  document.getElementById('peer-alias-input').value = '';
+  await loadStudentData(peer.code, true);
 });
 
 // Retourner à son profil
@@ -177,38 +197,3 @@ document.getElementById('exit-visitor-btn')?.addEventListener('click', async () 
   }
 });
 
-// Export PDF
-document.getElementById('export-pdf-btn')?.addEventListener('click', () => {
-  const element = document.getElementById('character-sheet');
-  const name = document.getElementById('student-alias').innerText.replace(/\s+/g, '_');
-  
-  const opt = {
-    margin:       0.4,
-    filename:     `Fiche_Personnage_${name}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1080 },
-    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  // Masquer temporairement les éléments hors CV
-  const sidebarActions = document.querySelector('.top-bar');
-  const visitorIndicator = document.getElementById('visitor-mode-indicator');
-  const addProjectBtn = document.getElementById('add-project-btn');
-  const softSkillBtn = document.getElementById('add-soft-skill-btn');
-
-  if (sidebarActions) sidebarActions.style.display = 'none';
-  if (visitorIndicator) visitorIndicator.style.display = 'none';
-  if (addProjectBtn) addProjectBtn.style.display = 'none';
-  if (softSkillBtn) softSkillBtn.style.display = 'none';
-
-  element.classList.add('pdf-export-mode');
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    if (sidebarActions) sidebarActions.style.display = 'flex';
-    if (visitorIndicator) visitorIndicator.style.display = 'block';
-    if (addProjectBtn) addProjectBtn.style.display = 'block';
-    if (softSkillBtn) softSkillBtn.style.display = 'block';
-    element.classList.remove('pdf-export-mode');
-  });
-});

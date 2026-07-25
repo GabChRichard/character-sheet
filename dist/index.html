@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Feuille de Personnage — Multimédia</title>
     <meta name="description" content="Fiche de progression étudiante du département multimédia. Vos compétences calculées automatiquement par vos projets et endossements." />
+    <link rel="icon" type="image/svg+xml" href="/character-sheet/favicon.svg" />
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/character-sheet/assets/main-Vrpq8xV2.js"></script>
-    <link rel="modulepreload" crossorigin href="/character-sheet/assets/idleLogout-BXxrzi-w.js">
-    <link rel="stylesheet" crossorigin href="/character-sheet/assets/main-Cu72OmJ3.css">
+    <script type="module" crossorigin src="/character-sheet/assets/main-MDNBsMr-.js"></script>
+    <link rel="modulepreload" crossorigin href="/character-sheet/assets/idleLogout-BNR-m7Ij.js">
+    <link rel="stylesheet" crossorigin href="/character-sheet/assets/main-1R-TEY6j.css">
   </head>
   <body>
     <div id="app">
@@ -47,14 +48,12 @@
 
         <!-- TOP BAR -->
         <div class="top-bar">
-          <div class="app-title">🏰 Fiche de Personnage</div>
-          <div class="top-actions">
-            <button class="btn icon-btn" data-theme-target="dark-minimal" title="Thème Dark Minimal">🌌</button>
-            <button class="btn icon-btn" data-theme-target="parchment" title="Thème Parchemin">🏰</button>
-            <button class="btn icon-btn" data-theme-target="cyber" title="Thème Cyber">🌐</button>
-            <button class="btn icon-btn" id="export-pdf-btn" title="Exporter en PDF">📄</button>
-            <button class="btn icon-btn" id="student-logout-btn" title="Se déconnecter" style="margin-left: 10px;">🚪</button>
+          <div class="theme-actions">
+            <button class="btn theme-btn" data-theme-target="dark-minimal" title="Thème Dark">Dark</button>
+            <button class="btn theme-btn" data-theme-target="parchment" title="Thème Parchemin">Parchemin</button>
+            <button class="btn theme-btn" data-theme-target="cyber" title="Thème Cyber">Cyber</button>
           </div>
+          <button class="btn theme-btn" id="student-logout-btn" title="Se déconnecter">Déconnexion</button>
         </div>
 
         <!-- LAYOUT : SIDEBAR + MAIN -->
@@ -66,20 +65,21 @@
             <!-- Profil -->
             <div class="panel profile-panel">
               <div class="profile-header">
-                <div class="avatar-container" style="position: relative; display: inline-block;">
+                <div class="avatar-container">
                   <div class="avatar" id="student-avatar">🧙‍♂️</div>
-                  <label for="avatar-upload" class="avatar-edit-overlay" title="Changer l'image">📷</label>
-                  <input type="file" id="avatar-upload" accept="image/*" class="hidden" />
                 </div>
-                <h1 class="alias">
-                  <span id="student-alias">Alias</span>
-                  <button class="btn icon-btn" id="edit-profile-btn" title="Éditer le profil" style="font-size: 1rem;">✏️</button>
-                </h1>
-                <p class="bio" id="student-bio"></p>
-                <div class="interests-section" style="margin-top: 10px; text-align: left;">
-                  <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted);">Intérêts :</div>
-                  <div class="tags" id="student-interests"></div>
+                <div class="profile-identity">
+                  <h1 class="alias">
+                    <span id="student-alias">Alias</span>
+                    <button class="btn icon-btn" id="edit-profile-btn" title="Éditer le profil" style="font-size: 1rem;">✏️</button>
+                  </h1>
+                  <p class="bio" id="student-bio"></p>
                 </div>
+              </div>
+
+              <div class="interests-section" style="margin-top: 10px;">
+                <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text-muted);">Intérêts :</div>
+                <div class="tags" id="student-interests" style="justify-content: flex-start;"></div>
               </div>
 
               <!-- Niveau global -->
@@ -90,6 +90,11 @@
                 </div>
                 <div class="level-score"><span id="current-score">0</span> points</div>
               </div>
+
+              <!-- Radar des catégories de compétences -->
+              <div class="radar-container">
+                <canvas id="skillsRadar"></canvas>
+              </div>
             </div>
 
             <!-- Savoir-être (Soft Skills) -->
@@ -99,7 +104,7 @@
 
             <!-- Badges -->
             <div class="panel">
-              <h2>🏅 Badges</h2>
+              <h2>Badges</h2>
               <div class="badges-grid" id="badges-grid">
                 <!-- Badges générés ici -->
               </div>
@@ -107,11 +112,11 @@
 
             <!-- Visiter un pair (ex-Endosser un pair) -->
             <div class="panel">
-              <h2>🔍 Chercher un pair</h2>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez le code d'un étudiant pour endosser ses projets.</p>
+              <h2>Chercher un pair</h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez l'alias d'un étudiant pour endosser ses projets.</p>
               <div class="input-group">
-                <input type="text" id="peer-code-input" placeholder="Ex: STU-1234" />
-                <button id="search-peer-btn" class="btn primary" style="padding: 0 16px;">🔍 Chercher</button>
+                <input type="text" id="peer-alias-input" placeholder="Ex: Ecureuil_23" />
+                <button id="search-peer-btn" class="btn primary" style="padding: 0 16px;">Chercher</button>
               </div>
               <div id="visitor-mode-indicator" class="hidden" style="margin-top: 10px; padding: 8px; background: rgba(139, 92, 246, 0.1); border-radius: var(--radius); text-align: center; font-size: 0.85rem;">
                 <span id="visitor-msg">Mode Visiteur</span>
@@ -127,7 +132,7 @@
             <!-- Projets -->
             <div class="panel">
               <div class="section-header">
-                <h2>📁 Inventaire Projets</h2>
+                <h2>Inventaire Projets</h2>
                 <button class="btn secondary" id="add-project-btn">+ Ajouter</button>
               </div>
               <div id="project-grid-root">
@@ -137,14 +142,9 @@
 
             <!-- Compétences (Calculées) -->
             <div class="panel">
-              <h2>📊 Compétences</h2>
-              <div style="display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start;" class="skills-grid-container">
-                <div id="skills-list-container">
-                  <!-- Compétences générées ici -->
-                </div>
-                <div class="radar-container" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 10px;">
-                  <canvas id="skillsRadar"></canvas>
-                </div>
+              <h2>Compétences</h2>
+              <div id="skills-list-container">
+                <!-- Compétences générées ici -->
               </div>
             </div>
 
@@ -168,8 +168,17 @@
         <h2>Éditer le profil</h2>
         <form id="profile-form">
           <div class="form-group">
+            <label>Photo de profil</label>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div class="avatar" id="prof-avatar-preview" style="width: 64px; height: 64px; font-size: 28px;">🧙‍♂️</div>
+              <label for="prof-avatar-input" class="btn secondary" style="cursor: pointer;">Changer l'image</label>
+              <input type="file" id="prof-avatar-input" accept="image/*" class="hidden" />
+            </div>
+          </div>
+          <div class="form-group">
             <label for="prof-alias">Nom d'utilisateur (Alias)</label>
             <input type="text" id="prof-alias" required />
+            <div id="prof-alias-error" class="error-msg hidden"></div>
           </div>
           <div class="form-group">
             <label for="prof-bio">Bio courte</label>
@@ -185,6 +194,16 @@
           </div>
           <button type="submit" class="btn primary">Enregistrer</button>
         </form>
+      </div>
+    </div>
+
+    <!-- ====== MODAL SAVOIR-ÊTRE (CATALOGUE) ====== -->
+    <div id="soft-skills-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal close-soft-skills-modal">&times;</span>
+        <h2>Ajouter des savoir-être</h2>
+        <div id="soft-skills-catalog"></div>
+        <button type="button" id="save-soft-skills-btn" class="btn primary" style="margin-top: 16px;">Enregistrer</button>
       </div>
     </div>
 

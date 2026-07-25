@@ -1,47 +1,31 @@
 // src/components/student/SkillPanel.js
-import Chart from 'chart.js/auto';
-import skillsData from '../../data/skills.json';
+import skillCategories from '../../data/skills.json';
+import { computeSkillScores } from '../../utils/scoreCalculator.js';
 
-let radarInstance = null;
+const allSkills = skillCategories.flatMap(cat =>
+  cat.items.map(item => ({ ...item, categoryId: cat.id, categoryLabel: cat.label }))
+);
 
 export function renderSkillPanel(projects, endorsements) {
   const container = document.getElementById('skills-list-container');
   if (!container) return;
   container.innerHTML = '';
 
-  // 1. Calculer les scores par compétence
-  const scores = {};
-  Object.keys(skillsData).forEach(id => {
-    scores[id] = 0;
-  });
-
-  projects.forEach(project => {
-    const projectEndorsements = endorsements.filter(e => e.project_id === project.id).length;
-    const projectValue = project.skills ? project.skills.length : 0;
-    const endorsementBoost = projectEndorsements * 10;
-
-    if (project.skills) {
-      project.skills.forEach(skillId => {
-        if (scores[skillId] !== undefined) {
-          scores[skillId] += projectValue + endorsementBoost;
-        }
-      });
-    }
-  });
+  const scores = computeSkillScores(projects, endorsements);
 
   // Tri par score décroissant
-  const sortedSkills = Object.keys(skillsData)
-    .map(id => ({ id, score: scores[id], ...skillsData[id] }))
+  const sortedSkills = allSkills
+    .map(skill => ({ ...skill, score: scores[skill.id] || 0 }))
     .sort((a, b) => b.score - a.score);
 
-  // Séparer les 6 principales des autres
-  const topSkills = sortedSkills.slice(0, 6);
-  const otherSkills = sortedSkills.slice(6);
+  // Séparer les 4 principales des autres
+  const topSkills = sortedSkills.slice(0, 4);
+  const otherSkills = sortedSkills.slice(4);
 
   // Déterminer le score max pour l'affichage proportionnel
   const maxScore = Math.max(...sortedSkills.map(s => s.score), 1);
 
-  // Rendu des 6 principales
+  // Rendu des 4 principales
   topSkills.forEach(skill => {
     const row = createSkillRow(skill, maxScore);
     container.appendChild(row);
@@ -77,11 +61,6 @@ export function renderSkillPanel(projects, endorsements) {
       accordionContent.appendChild(row);
     });
   }
-
-  // Rendu du Radar Chart sur les 6 compétences principales
-  const labels = topSkills.map(s => s.label);
-  const dataPoints = topSkills.map(s => s.score);
-  renderRadarChart(labels, dataPoints);
 }
 
 function createSkillRow(skill, maxScore) {
@@ -99,61 +78,17 @@ function createSkillRow(skill, maxScore) {
   const blocksHtml = `${filledChars}<span class="empty" style="color: var(--border-color);">${emptyChars}</span>`;
 
   row.innerHTML = `
-    <div class="skill-icon">${skill.icon}</div>
     <div class="skill-name" style="font-weight: 600;">${skill.label}</div>
     <div class="skill-blocks" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 1px;">${blocksHtml}</div>
     <div class="skill-score-val" style="font-weight: bold; text-align: right; color: var(--accent-color);">${skill.score} pts</div>
-    <div class="skill-desc-preview" style="grid-column: 2 / -1; font-size: 0.78rem; color: var(--text-muted); padding-top: 2px;">${skill.description}</div>
+    <div class="skill-desc-preview" style="grid-column: 1 / -1; font-size: 0.78rem; color: var(--text-muted); padding-top: 2px;">${skill.categoryLabel}</div>
   `;
 
-  // Ajustement de la structure grille CSS du skill-item pour la v5
   row.style.display = 'grid';
-  row.style.gridTemplateColumns = '30px 1fr 120px 80px';
+  row.style.gridTemplateColumns = '1fr 120px 80px';
   row.style.alignItems = 'center';
   row.style.padding = '10px 0';
   row.style.borderBottom = '1px solid var(--border-color)';
 
   return row;
-}
-
-function renderRadarChart(labels, dataPoints) {
-  const ctx = document.getElementById('skillsRadar');
-  if (!ctx) return;
-
-  if (radarInstance) radarInstance.destroy();
-
-  const isDark = document.documentElement.dataset.theme === 'dark-minimal';
-  const textColor = isDark ? '#a1a1aa' : '#6b5c53';
-  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-
-  radarInstance = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Points',
-        data: dataPoints,
-        backgroundColor: 'rgba(139, 92, 246, 0.15)',
-        borderColor: '#8b5cf6',
-        pointBackgroundColor: '#6366f1',
-        borderWidth: 2,
-      }]
-    },
-    options: {
-      scales: {
-        r: {
-          angleLines: { color: gridColor },
-          grid: { color: gridColor },
-          pointLabels: {
-            font: { family: 'Inter', size: 9, weight: 'bold' },
-            color: textColor
-          },
-          ticks: { display: false }
-        }
-      },
-      plugins: {
-        legend: { display: false }
-      }
-    }
-  });
 }
