@@ -1,6 +1,6 @@
 // src/components/student/ProjectModal.js
 import { db } from '../../services/SupabaseService.js';
-import { skillsIndex, getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
+import { skillsIndex, getSkillId, getSkillHours, getSkillSelfAssessment } from '../../utils/skillsIndex.js';
 import { resolveEndorsementPoints } from '../../utils/scoreCalculator.js';
 import config from '../../data/config.json';
 import { renderProjectForm } from './ProjectForm.js';
@@ -52,7 +52,9 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
           const sk = skillsIndex[skillId];
           const hoursLabel = config.scoring.hoursTiers.find(t => t.hours === getSkillHours(entry))?.label || '';
           const hoursTag = hoursLabel ? ` · ${hoursLabel}` : '';
-          return sk ? `<span class="tag">${sk.icon} ${sk.label}${hoursTag}</span>` : `<span class="tag">${skillId}${hoursTag}</span>`;
+          const assessmentLabel = config.scoring.selfAssessmentTiers.find(t => t.value === getSkillSelfAssessment(entry))?.label || '';
+          const assessmentTag = assessmentLabel ? ` · ${assessmentLabel}` : '';
+          return sk ? `<span class="tag">${sk.icon} ${sk.label}${hoursTag}${assessmentTag}</span>` : `<span class="tag">${skillId}${hoursTag}${assessmentTag}</span>`;
         }).join('')}
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;" title="${categoryCount} catégorie(s) de compétences">

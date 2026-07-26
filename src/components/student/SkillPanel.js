@@ -82,14 +82,15 @@ function createSkillRow(skill, maxScore) {
   const level = resolveLevel(skill.score, config.skillLevels);
 
   row.innerHTML = `
-    <div class="skill-name" style="font-weight: 600;">${skill.label} <span class="skill-level" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">· ${level.title}</span></div>
+    <div class="skill-name" style="font-weight: 600;">${skill.label}</div>
+    <div class="skill-level" style="font-weight: 500; font-size: 0.78rem; text-align: right; color: var(--text-muted);">${level.title}</div>
     <div class="skill-blocks" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 1px;">${blocksHtml}</div>
     <div class="skill-score-val" style="font-weight: bold; text-align: right; color: var(--accent-color);">${skill.score} pts</div>
     <div class="skill-desc-preview" style="grid-column: 1 / -1; font-size: 0.78rem; color: var(--text-muted); padding-top: 2px;">${skill.categoryLabel}</div>
   `;
 
   row.style.display = 'grid';
-  row.style.gridTemplateColumns = '1fr 120px 80px';
+  row.style.gridTemplateColumns = '1fr 90px 120px 80px';
   row.style.alignItems = 'center';
   row.style.padding = '10px 0';
   row.style.borderBottom = '1px solid var(--border-color)';

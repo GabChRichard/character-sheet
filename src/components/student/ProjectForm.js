@@ -3,7 +3,7 @@ import { db } from '../../services/SupabaseService.js';
 import skillCategories from '../../data/skills.json';
 import coursesData from '../../data/courses.json';
 import config from '../../data/config.json';
-import { getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
+import { getSkillId, getSkillHours, getSkillSelfAssessment } from '../../utils/skillsIndex.js';
 
 export function renderProjectForm(project = null, onActionCompleted = null) {
   const body = document.getElementById('project-modal-body');
@@ -88,15 +88,23 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
                   : null;
                 const checked = existing ? 'checked' : '';
                 const hours = existing ? getSkillHours(existing) : 1;
+                const assessment = existing ? getSkillSelfAssessment(existing) : null;
                 return `
                   <div class="skill-checkbox-row">
                     <label>
                       <input type="checkbox" name="form-proj-skills" value="${item.id}" ${checked}>
                       <span>${item.label}</span>
                     </label>
+                    <small class="toggle-row-label ${checked ? '' : 'hidden'}">Temps investi</small>
                     <div class="hours-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${hours}">
                       ${config.scoring.hoursTiers.map(t => `
                         <button type="button" class="btn small hours-btn ${hours === t.hours ? 'active' : ''}" data-hours="${t.hours}">${t.label}</button>
+                      `).join('')}
+                    </div>
+                    <small class="toggle-row-label ${checked ? '' : 'hidden'}">Autoévaluation</small>
+                    <div class="assessment-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${assessment || ''}">
+                      ${config.scoring.selfAssessmentTiers.map(t => `
+                        <button type="button" class="btn small assessment-btn ${assessment === t.value ? 'active' : ''}" data-assessment="${t.value}">${t.label}</button>
                       `).join('')}
                     </div>
                   </div>
@@ -133,11 +141,13 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
     thumbnailPreview.style.backgroundImage = `url("${URL.createObjectURL(file)}")`;
   });
 
-  // Afficher/masquer le toggle de temps investi selon l'état de la case à cocher
+  // Afficher/masquer les toggles (temps investi + autoévaluation) selon l'état de la case à cocher
   document.querySelectorAll('input[name="form-proj-skills"]').forEach(cb => {
     cb.addEventListener('change', () => {
-      const toggle = document.querySelector(`.hours-toggle[data-skill-id="${cb.value}"]`);
-      if (toggle) toggle.classList.toggle('hidden', !cb.checked);
+      const row = cb.closest('.skill-checkbox-row');
+      row?.querySelectorAll('.toggle-row-label, .hours-toggle, .assessment-toggle').forEach(el => {
+        el.classList.toggle('hidden', !cb.checked);
+      });
     });
   });
 
@@ -148,6 +158,16 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       if (!toggle) return;
       toggle.dataset.value = btn.dataset.hours;
       toggle.querySelectorAll('.hours-btn').forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+
+  // Sélection de l'autoévaluation pour chaque compétence cochée
+  document.querySelectorAll('.assessment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const toggle = btn.closest('.assessment-toggle');
+      if (!toggle) return;
+      toggle.dataset.value = btn.dataset.assessment;
+      toggle.querySelectorAll('.assessment-btn').forEach(b => b.classList.toggle('active', b === btn));
     });
   });
 
@@ -185,9 +205,11 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
     }
 
     const selectedSkills = Array.from(document.querySelectorAll('input[name="form-proj-skills"]:checked')).map(cb => {
-      const toggle = document.querySelector(`.hours-toggle[data-skill-id="${cb.value}"]`);
-      const hours = toggle && [1, 2, 3].includes(Number(toggle.dataset.value)) ? Number(toggle.dataset.value) : 1;
-      return { id: cb.value, hours };
+      const hoursToggle = document.querySelector(`.hours-toggle[data-skill-id="${cb.value}"]`);
+      const hours = hoursToggle && [1, 2, 3].includes(Number(hoursToggle.dataset.value)) ? Number(hoursToggle.dataset.value) : 1;
+      const assessmentToggle = document.querySelector(`.assessment-toggle[data-skill-id="${cb.value}"]`);
+      const assessment = assessmentToggle?.dataset.value || '';
+      return { id: cb.value, hours, ...(assessment ? { selfAssessment: assessment } : {}) };
     });
     const session = document.getElementById('form-proj-session').value;
     const year = document.getElementById('form-proj-year').value;

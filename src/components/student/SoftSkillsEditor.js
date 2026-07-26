@@ -60,6 +60,17 @@ function openCatalogModal(selected, onUpdate) {
 
   modal.classList.remove('hidden');
 
+  const countEl = document.getElementById('soft-skills-count');
+  const updateCount = () => {
+    if (!countEl) return;
+    const count = catalog.querySelectorAll('input[name="soft-skill-catalog"]:checked').length;
+    countEl.textContent = `${count}/10 sélectionné${count > 1 ? 's' : ''}`;
+  };
+  updateCount();
+  catalog.querySelectorAll('input[name="soft-skill-catalog"]').forEach(cb => {
+    cb.addEventListener('change', updateCount);
+  });
+
   // Remplacer les boutons statiques (clonage) pour éviter d'empiler des
   // listeners à chaque ouverture du modal (le modal reste dans le DOM entre
   // deux rendus de SoftSkillsEditor, contrairement au reste du panneau).

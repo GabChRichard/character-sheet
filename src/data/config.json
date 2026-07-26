@@ -12,21 +12,27 @@
       { "hours": 1, "points": 1, "label": "1h" },
       { "hours": 2, "points": 2, "label": "2 à 4h" },
       { "hours": 3, "points": 3, "label": "5h et +" }
+    ],
+    "selfAssessmentTiers": [
+      { "value": "excellent", "label": "Excellent", "points": 3 },
+      { "value": "bien", "label": "Bien", "points": 2 },
+      { "value": "correct", "label": "Correct", "points": 1 },
+      { "value": "insuffisant", "label": "Insuffisant", "points": 0 }
     ]
   },
   "globalTitles": [
-    { "minScore": 0, "maxScore": 49, "title": "Aspirant" },
-    { "minScore": 50, "maxScore": 199, "title": "Artisan numérique" },
-    { "minScore": 200, "maxScore": 449, "title": "Bâtisseur" },
-    { "minScore": 450, "maxScore": 799, "title": "Architecte" },
-    { "minScore": 800, "maxScore": 1199, "title": "Expert reconnu" },
-    { "minScore": 1200, "maxScore": 99999, "title": "Virtuose du multimédia" }
+    { "minScore": 0, "maxScore": 39, "title": "Aspirant" },
+    { "minScore": 40, "maxScore": 149, "title": "Artisan numérique" },
+    { "minScore": 150, "maxScore": 349, "title": "Bâtisseur" },
+    { "minScore": 350, "maxScore": 599, "title": "Architecte" },
+    { "minScore": 600, "maxScore": 899, "title": "Expert reconnu" },
+    { "minScore": 900, "maxScore": 99999, "title": "Virtuose du multimédia" }
   ],
   "skillLevels": [
     { "minScore": 0, "maxScore": 9, "title": "Non-initié" },
     { "minScore": 10, "maxScore": 39, "title": "Initié" },
-    { "minScore": 40, "maxScore": 99, "title": "Expert" },
-    { "minScore": 100, "maxScore": 199, "title": "Maître" },
-    { "minScore": 200, "maxScore": 99999, "title": "Légende" }
+    { "minScore": 40, "maxScore": 79, "title": "Expert" },
+    { "minScore": 80, "maxScore": 149, "title": "Maître" },
+    { "minScore": 150, "maxScore": 99999, "title": "Légende" }
   ]
 }

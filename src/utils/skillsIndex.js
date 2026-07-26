@@ -26,3 +26,13 @@ export function getSkillHours(entry) {
   if (typeof entry === 'string') return 1;
   return [1, 2, 3].includes(entry.hours) ? entry.hours : 1;
 }
+
+// Autoévaluation qualitative de l'élève pour cette compétence sur ce projet
+// (voir config.scoring.selfAssessmentTiers). Absente pour les entrées legacy
+// ou tant que l'élève ne l'a pas renseignée — retourne alors `null` (aucun
+// bonus, ni pénalité).
+const VALID_SELF_ASSESSMENTS = new Set(['excellent', 'bien', 'correct', 'insuffisant']);
+export function getSkillSelfAssessment(entry) {
+  if (typeof entry === 'string') return null;
+  return VALID_SELF_ASSESSMENTS.has(entry.selfAssessment) ? entry.selfAssessment : null;
+}
