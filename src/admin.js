@@ -158,7 +158,7 @@ document.getElementById('new-student-inline-form')?.addEventListener('submit', a
       alias,
       year: 1,
       interests: [],
-      bio: '',
+      objectif: '',
       avatarUrl: '',
       softSkills: []
     }];
@@ -206,7 +206,7 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
           alias: parts[2] || '',
           year: 1,
           interests: [],
-          bio: '',
+          objectif: '',
           avatarUrl: '',
           softSkills: []
         });

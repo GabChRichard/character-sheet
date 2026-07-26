@@ -23,28 +23,12 @@ export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
     selected.forEach(skill => {
       const span = document.createElement('span');
       span.className = 'tag';
-      span.innerHTML = isOwner
-        ? `${skill} <span class="remove-soft-skill" data-skill="${skill}" style="cursor:pointer; margin-left:5px; font-weight:bold;">&times;</span>`
-        : skill;
+      span.innerText = skill;
       tagsEl.appendChild(span);
     });
   }
 
   if (!isOwner) return;
-
-  // Suppression instantanée d'un savoir-être depuis le panneau
-  container.querySelectorAll('.remove-soft-skill').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const skill = e.currentTarget.dataset.skill;
-      const updated = selected.filter(s => s !== skill);
-      try {
-        await db.updateStudentProfile({ softSkills: updated });
-        if (onUpdate) onUpdate();
-      } catch (err) {
-        alert("Erreur lors de la suppression: " + err.message);
-      }
-    });
-  });
 
   document.getElementById('add-soft-skill-btn')?.addEventListener('click', () => {
     openCatalogModal(selected, onUpdate);
@@ -89,6 +73,10 @@ function openCatalogModal(selected, onUpdate) {
   saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
   newSaveBtn.addEventListener('click', async () => {
     const updated = Array.from(catalog.querySelectorAll('input[name="soft-skill-catalog"]:checked')).map(cb => cb.value);
+    if (updated.length > 10) {
+      alert("Vous ne pouvez sélectionner que 10 savoir-être maximum.");
+      return;
+    }
     try {
       await db.updateStudentProfile({ softSkills: updated });
       modal.classList.add('hidden');

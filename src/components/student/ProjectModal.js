@@ -1,6 +1,8 @@
 // src/components/student/ProjectModal.js
 import { db } from '../../services/SupabaseService.js';
-import { skillsIndex, getSkillId, getSkillComplexity } from '../../utils/skillsIndex.js';
+import { skillsIndex, getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
+import { resolveEndorsementPoints } from '../../utils/scoreCalculator.js';
+import config from '../../data/config.json';
 import { renderProjectForm } from './ProjectForm.js';
 
 export function openProjectModal(project, isOwner, visitorCode, currentStudentCode, onActionCompleted) {
@@ -22,8 +24,12 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
   const projectEndorsements = allEndorsements.filter(e => e.project_id === project.id);
   const hasEndorsed = visitorCode ? projectEndorsements.some(e => e.from_code === visitorCode) : false;
 
-  const skillWeight = (project.skills || []).reduce((sum, s) => sum + getSkillComplexity(s), 0);
-  const dots = "●".repeat(project.skills ? Math.min(5, skillWeight) : 1);
+  const skillWeight = (project.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
+  // Un dot par catégorie de hard skills mobilisée par le projet (5 catégories = 5 dots max)
+  const categoryCount = new Set(
+    (project.skills || []).map(s => skillsIndex[getSkillId(s)]?.categoryId).filter(Boolean)
+  ).size;
+  const dots = "●".repeat(categoryCount);
 
   body.innerHTML = `
     <span class="close-modal" id="close-project-modal">&times;</span>
@@ -31,7 +37,6 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
     <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; display: flex; gap: 15px;">
       <span>🏫 ${project.course || 'Cours non spécifié'}</span>
       <span>📅 Semestre: ${project.semester || 'Non spécifié'}</span>
-      ${project.pinned ? '<span style="color: var(--gold-color);">📌 Épinglé</span>' : ''}
     </div>
 
     <div style="margin-bottom: 20px;">
@@ -45,12 +50,14 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
         ${(project.skills || []).map(entry => {
           const skillId = getSkillId(entry);
           const sk = skillsIndex[skillId];
-          const complexityTag = getSkillComplexity(entry) === 2 ? ' · Complexe' : '';
-          return sk ? `<span class="tag">${sk.icon} ${sk.label}${complexityTag}</span>` : `<span class="tag">${skillId}${complexityTag}</span>`;
+          const hoursLabel = config.scoring.hoursTiers.find(t => t.hours === getSkillHours(entry))?.label || '';
+          const hoursTag = hoursLabel ? ` · ${hoursLabel}` : '';
+          return sk ? `<span class="tag">${sk.icon} ${sk.label}${hoursTag}</span>` : `<span class="tag">${skillId}${hoursTag}</span>`;
         }).join('')}
       </div>
-      <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
-        Valeur additive pour chaque compétence : <strong>+${project.skills ? project.skills.length : 0}</strong> points ${dots}
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;" title="${categoryCount} catégorie(s) de compétences">
+        <span>${dots}</span>
+        <strong style="font-size: 0.8rem;">${skillWeight} pts</strong>
       </div>
     </div>
 
@@ -64,7 +71,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 1.1rem;">👍</span>
         <span style="font-size: 0.9rem; font-weight: 600;">${projectEndorsements.length} endossement(s)</span>
-        <span style="font-size: 0.8rem; color: var(--text-muted);"> (+${projectEndorsements.length * 10} pts sur les compétences liées)</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);"> (+${resolveEndorsementPoints(projectEndorsements.length)} pts sur les compétences liées)</span>
       </div>
 
       <div style="display: flex; gap: 8px;">

@@ -2,7 +2,8 @@
 import { db } from '../../services/SupabaseService.js';
 import skillCategories from '../../data/skills.json';
 import coursesData from '../../data/courses.json';
-import { getSkillId, getSkillComplexity } from '../../utils/skillsIndex.js';
+import config from '../../data/config.json';
+import { getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
 
 export function renderProjectForm(project = null, onActionCompleted = null) {
   const body = document.getElementById('project-modal-body');
@@ -76,7 +77,7 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       </div>
 
       <div class="form-group">
-        <label>Compétences mobilisées <small>(cochez une compétence, puis ajustez sa complexité)</small></label>
+        <label>Compétences mobilisées <small>(cochez une compétence, puis indiquez le temps investi)</small></label>
         ${skillCategories.map(cat => `
           <fieldset class="skills-fieldset">
             <legend>${cat.icon} ${cat.label}</legend>
@@ -86,16 +87,17 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
                   ? project.skills.find(s => getSkillId(s) === item.id)
                   : null;
                 const checked = existing ? 'checked' : '';
-                const complexity = existing ? getSkillComplexity(existing) : 1;
+                const hours = existing ? getSkillHours(existing) : 1;
                 return `
                   <div class="skill-checkbox-row">
                     <label>
                       <input type="checkbox" name="form-proj-skills" value="${item.id}" ${checked}>
                       <span>${item.label}</span>
                     </label>
-                    <div class="complexity-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${complexity}">
-                      <button type="button" class="btn small complexity-btn ${complexity === 1 ? 'active' : ''}" data-complexity="1">Simple</button>
-                      <button type="button" class="btn small complexity-btn ${complexity === 2 ? 'active' : ''}" data-complexity="2">Complexe</button>
+                    <div class="hours-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${hours}">
+                      ${config.scoring.hoursTiers.map(t => `
+                        <button type="button" class="btn small hours-btn ${hours === t.hours ? 'active' : ''}" data-hours="${t.hours}">${t.label}</button>
+                      `).join('')}
                     </div>
                   </div>
                 `;
@@ -131,21 +133,21 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
     thumbnailPreview.style.backgroundImage = `url("${URL.createObjectURL(file)}")`;
   });
 
-  // Afficher/masquer le toggle de complexité selon l'état de la case à cocher
+  // Afficher/masquer le toggle de temps investi selon l'état de la case à cocher
   document.querySelectorAll('input[name="form-proj-skills"]').forEach(cb => {
     cb.addEventListener('change', () => {
-      const toggle = document.querySelector(`.complexity-toggle[data-skill-id="${cb.value}"]`);
+      const toggle = document.querySelector(`.hours-toggle[data-skill-id="${cb.value}"]`);
       if (toggle) toggle.classList.toggle('hidden', !cb.checked);
     });
   });
 
-  // Sélection Simple / Complexe pour chaque compétence cochée
-  document.querySelectorAll('.complexity-btn').forEach(btn => {
+  // Sélection du temps investi pour chaque compétence cochée
+  document.querySelectorAll('.hours-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const toggle = btn.closest('.complexity-toggle');
+      const toggle = btn.closest('.hours-toggle');
       if (!toggle) return;
-      toggle.dataset.value = btn.dataset.complexity;
-      toggle.querySelectorAll('.complexity-btn').forEach(b => b.classList.toggle('active', b === btn));
+      toggle.dataset.value = btn.dataset.hours;
+      toggle.querySelectorAll('.hours-btn').forEach(b => b.classList.toggle('active', b === btn));
     });
   });
 
@@ -183,9 +185,9 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
     }
 
     const selectedSkills = Array.from(document.querySelectorAll('input[name="form-proj-skills"]:checked')).map(cb => {
-      const toggle = document.querySelector(`.complexity-toggle[data-skill-id="${cb.value}"]`);
-      const complexity = toggle && toggle.dataset.value === '2' ? 2 : 1;
-      return { id: cb.value, complexity };
+      const toggle = document.querySelector(`.hours-toggle[data-skill-id="${cb.value}"]`);
+      const hours = toggle && [1, 2, 3].includes(Number(toggle.dataset.value)) ? Number(toggle.dataset.value) : 1;
+      return { id: cb.value, hours };
     });
     const session = document.getElementById('form-proj-session').value;
     const year = document.getElementById('form-proj-year').value;

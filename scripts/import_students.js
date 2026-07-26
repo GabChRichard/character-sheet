@@ -106,7 +106,7 @@ async function main() {
       alias: cols[2] || 'Étudiant',
       year: parseInt(cols[3], 10) || 1,
       interests: cols[4] ? cols[4].split(',').map(s => s.trim()).filter(s => s.length > 0) : [],
-      bio: cols[5] || '',
+      objectif: cols[5] || '',
       avatarSeed: cols[6] || 'default'
     });
   }
@@ -138,7 +138,7 @@ async function main() {
       avatarUrl: '',
       year: s.year,
       interests: s.interests,
-      bio: s.bio,
+      objectif: s.objectif,
       theme: existingThemeByCode[s.code] || 'dark-minimal',
       softSkills: []
     },

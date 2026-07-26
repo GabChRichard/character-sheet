@@ -47,6 +47,7 @@ export function renderSkillRadar(projects, endorsements) {
       layout: { padding: 4 },
       scales: {
         r: {
+          beginAtZero: true,
           angleLines: { color: gridColor },
           grid: { color: gridColor },
           pointLabels: {

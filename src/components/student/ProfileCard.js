@@ -12,13 +12,13 @@ function renderAvatarInto(el, avatarUrl) {
 
 export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   const aliasEl = document.getElementById('student-alias');
-  const bioEl = document.getElementById('student-bio');
+  const objectifEl = document.getElementById('student-objectif');
   const tagsEl = document.getElementById('student-interests');
   const avatarEl = document.getElementById('student-avatar');
   const editProfileBtn = document.getElementById('edit-profile-btn');
 
   if (aliasEl) aliasEl.innerText = profile.alias || "Étudiant Anonyme";
-  if (bioEl) bioEl.innerText = profile.bio ? `"${profile.bio}"` : "Aucune bio";
+  if (objectifEl) objectifEl.innerText = profile.objectif ? `"${profile.objectif}"` : "Aucun objectif";
   renderAvatarInto(avatarEl, profile.avatarUrl);
 
   // Masquer le bouton d'édition si on n'est pas le propriétaire
@@ -49,14 +49,14 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
       const modal = document.getElementById('profile-modal');
       const aliasInput = document.getElementById('prof-alias');
       const aliasError = document.getElementById('prof-alias-error');
-      const bioInput = document.getElementById('prof-bio');
+      const objectifInput = document.getElementById('prof-objectif');
       const interestList = document.getElementById('edit-interests-list');
       const avatarPreview = document.getElementById('prof-avatar-preview');
       const avatarInput = document.getElementById('prof-avatar-input');
 
       if (aliasInput) aliasInput.value = profile.alias || '';
       if (aliasError) aliasError.classList.add('hidden');
-      if (bioInput) bioInput.value = profile.bio || '';
+      if (objectifInput) objectifInput.value = profile.objectif || '';
       renderAvatarInto(avatarPreview, profile.avatarUrl);
 
       // Upload immédiat de la photo dès sa sélection
@@ -105,11 +105,14 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
       const newInterestInput = document.getElementById('new-interest-input');
       const handleAddInterest = () => {
         const value = newInterestInput.value.trim();
-        if (value && !(profile.interests || []).includes(value)) {
-          profile.interests = [...(profile.interests || []), value];
-          newInterestInput.value = '';
-          renderEditInterests();
+        if (!value || (profile.interests || []).includes(value)) return;
+        if ((profile.interests || []).length >= 6) {
+          alert("Vous ne pouvez ajouter que 6 intérêts maximum.");
+          return;
         }
+        profile.interests = [...(profile.interests || []), value];
+        newInterestInput.value = '';
+        renderEditInterests();
       };
 
       addInterestBtn?.addEventListener('click', handleAddInterest);
@@ -125,12 +128,12 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
         profileForm.onsubmit = async (e) => {
           e.preventDefault();
           const newAlias = document.getElementById('prof-alias').value.trim();
-          const newBio = document.getElementById('prof-bio').value.trim();
+          const newObjectif = document.getElementById('prof-objectif').value.trim();
           if (aliasError) aliasError.classList.add('hidden');
           try {
             await db.updateStudentProfile({
               alias: newAlias,
-              bio: newBio,
+              objectif: newObjectif,
               interests: profile.interests || []
             });
             modal.classList.add('hidden');

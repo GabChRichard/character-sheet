@@ -12,14 +12,17 @@ export const skillsIndex = skillCategories.reduce((acc, cat) => {
 }, {});
 
 // `project.skills` accepte deux formes : l'ancienne (tableau d'ids strings,
-// pour les projets créés avant la gradation de complexité) et la nouvelle
-// (tableau d'objets { id, complexity }). Ces deux helpers permettent à tout
+// pour les projets créés avant l'ajout du temps investi) et la nouvelle
+// (tableau d'objets { id, hours }). Ces deux helpers permettent à tout
 // le code d'affichage/scoring de lire l'un ou l'autre sans distinction.
 export function getSkillId(entry) {
   return typeof entry === 'string' ? entry : entry.id;
 }
 
-export function getSkillComplexity(entry) {
+// `hours` est un palier (1, 2 ou 3 — voir config.scoring.hoursTiers), pas un
+// nombre d'heures brut. Par défaut à 1 (entrées legacy en string, ou objets
+// sans palier valide).
+export function getSkillHours(entry) {
   if (typeof entry === 'string') return 1;
-  return entry.complexity === 2 ? 2 : 1;
+  return [1, 2, 3].includes(entry.hours) ? entry.hours : 1;
 }

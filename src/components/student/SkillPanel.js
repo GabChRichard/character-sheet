@@ -1,6 +1,8 @@
 // src/components/student/SkillPanel.js
 import skillCategories from '../../data/skills.json';
+import config from '../../data/config.json';
 import { computeSkillScores } from '../../utils/scoreCalculator.js';
+import { resolveLevel } from '../../utils/titleResolver.js';
 
 const allSkills = skillCategories.flatMap(cat =>
   cat.items.map(item => ({ ...item, categoryId: cat.id, categoryLabel: cat.label }))
@@ -77,8 +79,10 @@ function createSkillRow(skill, maxScore) {
   const emptyChars = "░".repeat(totalBlocks - filledBlocksCount);
   const blocksHtml = `${filledChars}<span class="empty" style="color: var(--border-color);">${emptyChars}</span>`;
 
+  const level = resolveLevel(skill.score, config.skillLevels);
+
   row.innerHTML = `
-    <div class="skill-name" style="font-weight: 600;">${skill.label}</div>
+    <div class="skill-name" style="font-weight: 600;">${skill.label} <span class="skill-level" style="font-weight: 500; font-size: 0.78rem; color: var(--text-muted);">· ${level.title}</span></div>
     <div class="skill-blocks" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 1px;">${blocksHtml}</div>
     <div class="skill-score-val" style="font-weight: bold; text-align: right; color: var(--accent-color);">${skill.score} pts</div>
     <div class="skill-desc-preview" style="grid-column: 1 / -1; font-size: 0.78rem; color: var(--text-muted); padding-top: 2px;">${skill.categoryLabel}</div>

@@ -6,7 +6,7 @@ export class Profile {
     this.avatarSeed = data.avatarSeed || "default";
     this.year = data.year || 1;
     this.interests = data.interests || [];
-    this.bio = data.bio || "";
+    this.objectif = data.objectif || "";
     this.theme = data.theme || "parchment";
   }
 }
