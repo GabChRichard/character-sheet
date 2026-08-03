@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
+import { generateRandomStudentCode } from '../src/components/admin/CodeGenerator.js';
 
 // Helper pour lire un fichier .env donné
 function loadEnvFile(filename) {
@@ -98,53 +99,60 @@ async function main() {
   const students = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = parseCSVLine(lines[i]);
-    if (cols.length < 1 || !cols[0]) continue; // besoin au moins du code
+    if (cols.length < 1 || !cols[0]) continue; // besoin au moins du username GitHub
 
     students.push({
-      code: cols[0],
-      githubUsername: cols[1] || '',
-      alias: cols[2] || 'Étudiant',
-      year: parseInt(cols[3], 10) || 1,
-      interests: cols[4] ? cols[4].split(',').map(s => s.trim()).filter(s => s.length > 0) : [],
-      objectif: cols[5] || '',
-      avatarSeed: cols[6] || 'default'
+      githubUsername: cols[0],
+      alias: cols[1] || 'Étudiant',
+      year: parseInt(cols[2], 10) || 1,
+      interests: cols[3] ? cols[3].split(',').map(s => s.trim()).filter(s => s.length > 0) : [],
+      objectif: cols[4] || '',
+      avatarSeed: cols[5] || 'default'
     });
   }
 
   console.log(`📦 Préparation de l'importation de ${students.length} étudiants...`);
 
-  // Préserver le thème existant des étudiants déjà présents (comme le faisait
-  // l'ancienne RPC admin_import_students) : on lit d'abord leur profil actuel.
-  const codes = students.map(s => s.code);
+  // Résoudre le code interne de chaque étudiant : on réutilise celui d'un
+  // étudiant déjà provisionné avec le même github_username (le CSV ne fournit
+  // plus de code), sinon on en génère un nouveau. Ça évite de casser
+  // l'unicité de github_username ou de délier un compte déjà auto-lié.
+  // On préserve aussi le thème existant, comme le faisait l'ancienne RPC
+  // admin_import_students.
   const { data: existing, error: fetchError } = await supabase
     .from('students')
-    .select('code, profile')
-    .in('code', codes);
+    .select('code, github_username, profile')
+    .not('github_username', 'is', null);
 
   if (fetchError) {
     console.error("❌ Erreur lors de la lecture des étudiants existants :", fetchError.message);
     process.exit(1);
   }
 
-  const existingThemeByCode = Object.fromEntries(
-    (existing || []).map(s => [s.code, s.profile?.theme || 'dark-minimal'])
+  const existingByGithub = Object.fromEntries(
+    (existing || [])
+      .filter(s => s.github_username)
+      .map(s => [s.github_username.toLowerCase(), s])
   );
 
-  const rows = students.map(s => ({
-    code: s.code,
-    github_username: s.githubUsername || null,
-    profile: {
-      alias: s.alias,
-      avatarUrl: '',
-      year: s.year,
-      interests: s.interests,
-      objectif: s.objectif,
-      theme: existingThemeByCode[s.code] || 'dark-minimal',
-      softSkills: []
-    },
-    updated_at: new Date().toISOString(),
-    updated_by: 'cli-import'
-  }));
+  const rows = students.map(s => {
+    const match = existingByGithub[s.githubUsername.toLowerCase()];
+    return {
+      code: match?.code || generateRandomStudentCode(),
+      github_username: s.githubUsername || null,
+      profile: {
+        alias: s.alias,
+        avatarUrl: '',
+        year: s.year,
+        interests: s.interests,
+        objectif: s.objectif,
+        theme: match?.profile?.theme || 'dark-minimal',
+        softSkills: []
+      },
+      updated_at: new Date().toISOString(),
+      updated_by: 'cli-import'
+    };
+  });
 
   // auth_user_id n'est jamais inclus dans le payload : un ré-import ne peut
   // donc pas délier un étudiant déjà auto-lié à son compte GitHub.

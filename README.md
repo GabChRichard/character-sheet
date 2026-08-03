@@ -33,7 +33,7 @@ Vos compétences (panneau "📊 Compétences") sont calculées automatiquement �
 
 ## 🔍 Visiter un pair et endosser ses projets
 
-1. Dans le panneau "Chercher un pair", entrez le code d'un autre étudiant (visible sur son profil, format `STU-xxxxxx`).
+1. Dans le panneau "Chercher un pair", entrez l'alias d'un autre étudiant (visible sur son profil).
 2. Vous accédez à son profil en mode lecture seule (indiqué par le bandeau "Mode Visiteur").
 3. Ouvrez un de ses projets pour l'**endosser** (👍) — ça contribue à son score de compétences. Vous ne pouvez pas endosser vos propres projets.
 4. Cliquez sur "Retour à mon profil" pour revenir à votre propre fiche.

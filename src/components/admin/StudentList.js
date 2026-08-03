@@ -31,7 +31,6 @@ export function renderStudentList(students, projectsMap = {}, endorsementsMap = 
     li.innerHTML = `
       <div style="display: flex; flex-direction: column;">
         <span style="font-weight: 600; font-size: 0.9rem;">${student.profile.alias || 'Anonyme'}</span>
-        <code style="font-size: 0.75rem; color: var(--text-muted);">${student.code}</code>
       </div>
       <span class="score-badge" style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold;">
         ${score} pts

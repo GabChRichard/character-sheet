@@ -57,12 +57,6 @@
           <div id="new-student-inline-container" class="hidden"
             style="padding: 10px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: var(--radius);">
             <form id="new-student-inline-form" style="display: flex; flex-direction: column; gap: 8px;">
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="text" id="new-stu-code" placeholder="Code (ex: Sogol)" required
-                  style="flex: 1; padding: 6px; font-size: 0.8rem;" />
-                <button type="button" id="generate-code-btn" class="btn secondary small"
-                  style="padding: 6px; font-size: 0.75rem;">🎲 Générer</button>
-              </div>
               <input type="text" id="new-stu-github" placeholder="Username GitHub (ex: octocat)" required
                 style="padding: 6px; font-size: 0.8rem;" />
               <input type="text" id="new-stu-alias" placeholder="Alias (ex: Guerrier Web)"
@@ -85,7 +79,6 @@
       <main class="editor-panel hidden" id="editor-panel">
         <div class="editor-header">
           <h2 id="edit-student-name">Sélectionnez un étudiant</h2>
-          <span class="code-badge" id="edit-student-code">STU-XXXXXX</span>
         </div>
 
         <div class="tabs">

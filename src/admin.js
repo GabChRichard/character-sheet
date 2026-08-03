@@ -109,8 +109,7 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
 // Événement recherche
 document.getElementById('search-student')?.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase().trim();
-  const filtered = studentsCache.filter(s => 
-    s.code.toLowerCase().includes(query) || 
+  const filtered = studentsCache.filter(s =>
     (s.profile.alias || '').toLowerCase().includes(query)
   );
   renderStudentList(filtered, projectsCache, endorsementsCache, async (student) => {
@@ -122,12 +121,11 @@ document.getElementById('search-student')?.addEventListener('input', (e) => {
 const toggleFormBtn = document.getElementById('toggle-new-student-form-btn');
 const formContainer = document.getElementById('new-student-inline-container');
 const cancelFormBtn = document.getElementById('cancel-new-student-btn');
-const generateCodeBtn = document.getElementById('generate-code-btn');
 
 toggleFormBtn?.addEventListener('click', () => {
   formContainer.classList.toggle('hidden');
   if (!formContainer.classList.contains('hidden')) {
-    document.getElementById('new-stu-code').focus();
+    document.getElementById('new-stu-github').focus();
   }
 });
 
@@ -136,20 +134,14 @@ cancelFormBtn?.addEventListener('click', () => {
   document.getElementById('new-student-inline-form').reset();
 });
 
-generateCodeBtn?.addEventListener('click', () => {
-  const codeField = document.getElementById('new-stu-code');
-  if (codeField) {
-    codeField.value = generateRandomStudentCode();
-  }
-});
-
 document.getElementById('new-student-inline-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const code = document.getElementById('new-stu-code').value.trim();
   const githubUsername = document.getElementById('new-stu-github').value.trim();
   const alias = document.getElementById('new-stu-alias').value.trim() || 'Étudiant';
 
-  if (!code || !githubUsername) return;
+  if (!githubUsername) return;
+
+  const code = generateRandomStudentCode();
 
   try {
     const list = [{
@@ -192,18 +184,25 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
   reader.onload = async (event) => {
     const text = event.target.result;
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    
+
     let start = 0;
-    if (lines[0].toLowerCase().includes('code')) start = 1; // skip header
+    if (lines[0].toLowerCase().includes('githubusername')) start = 1; // skip header
+
+    const existingCodeByGithub = Object.fromEntries(
+      studentsCache
+        .filter(s => s.github_username)
+        .map(s => [s.github_username.toLowerCase(), s.code])
+    );
 
     const students = [];
     for (let i = start; i < lines.length; i++) {
       const parts = lines[i].split(',').map(p => p.trim());
-      if (parts.length >= 2 && parts[0] && parts[1]) {
+      if (parts.length >= 1 && parts[0]) {
+        const githubUsername = parts[0];
         students.push({
-          code: parts[0],
-          githubUsername: parts[1],
-          alias: parts[2] || '',
+          code: existingCodeByGithub[githubUsername.toLowerCase()] || generateRandomStudentCode(),
+          githubUsername,
+          alias: parts[1] || '',
           year: 1,
           interests: [],
           objectif: '',
@@ -236,7 +235,6 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
 async function loadStudentEditor(student) {
   document.getElementById('editor-panel').classList.remove('hidden');
   document.getElementById('edit-student-name').innerText = student.profile.alias || "Anonyme";
-  document.getElementById('edit-student-code').innerText = student.code;
   currentStudentCode = student.code;
 
   renderBadgeToggles(student.badges, currentAdmin.role);

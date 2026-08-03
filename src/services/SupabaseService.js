@@ -299,7 +299,7 @@ export class SupabaseService {
   async getAllStudents() {
     const { data, error } = await supabase
       .from('students')
-      .select('code, profile, badges, updated_at, updated_by')
+      .select('code, github_username, profile, badges, updated_at, updated_by')
       .order('code', { ascending: true });
     if (error) {
       console.error("getAllStudents error:", error);
