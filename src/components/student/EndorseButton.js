@@ -1,5 +1,6 @@
 // src/components/student/EndorseButton.js
 import { EndorsementService } from '../../services/EndorsementService.js';
+import { showToast } from '../../utils/notify.js';
 
 export function renderEndorseButton(container, skillId, studentCode, visitorCode, onEndorsed) {
   if (!container || !visitorCode || studentCode === visitorCode) return;
@@ -17,7 +18,7 @@ export function renderEndorseButton(container, skillId, studentCode, visitorCode
       if (onEndorsed) onEndorsed();
     } else {
       btn.disabled = false;
-      alert("Erreur lors de l'endossement.");
+      showToast("Erreur lors de l'endossement.", 'error');
     }
   });
 

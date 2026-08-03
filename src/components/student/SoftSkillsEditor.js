@@ -1,6 +1,7 @@
 // src/components/student/SoftSkillsEditor.js
 import { db } from '../../services/SupabaseService.js';
 import softSkillCategories from '../../data/softSkills.json';
+import { showToast } from '../../utils/notify.js';
 
 export function renderSoftSkillsEditor(profile, isOwner, onUpdate) {
   const container = document.getElementById('soft-skills-container');
@@ -85,7 +86,7 @@ function openCatalogModal(selected, onUpdate) {
   newSaveBtn.addEventListener('click', async () => {
     const updated = Array.from(catalog.querySelectorAll('input[name="soft-skill-catalog"]:checked')).map(cb => cb.value);
     if (updated.length > 10) {
-      alert("Vous ne pouvez sélectionner que 10 savoir-être maximum.");
+      showToast("Vous ne pouvez sélectionner que 10 savoir-être maximum.", 'info');
       return;
     }
     try {
@@ -93,7 +94,7 @@ function openCatalogModal(selected, onUpdate) {
       modal.classList.add('hidden');
       if (onUpdate) onUpdate();
     } catch (err) {
-      alert("Erreur lors de la mise à jour: " + err.message);
+      showToast("Erreur lors de la mise à jour : " + err.message, 'error');
     }
   });
 }

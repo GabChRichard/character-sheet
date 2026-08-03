@@ -1,5 +1,6 @@
 // src/components/student/ProfileCard.js
 import { db } from '../../services/SupabaseService.js';
+import { showToast } from '../../utils/notify.js';
 
 function renderAvatarInto(el, avatarUrl) {
   if (!el) return;
@@ -43,9 +44,15 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   }
 
   // Si c'est le propriétaire, configurer le formulaire d'édition (profil + avatar)
-  if (isOwner && onUpdate) {
+  if (isOwner && onUpdate && editProfileBtn) {
+    // Cloner le bouton pour repartir sans les anciens listeners : ce composant
+    // est ré-affiché à chaque sauvegarde/ajout de projet (voir loadStudentData
+    // dans main.js), et editProfileBtn reste le même nœud DOM entre deux rendus.
+    const newEditProfileBtn = editProfileBtn.cloneNode(true);
+    editProfileBtn.parentNode.replaceChild(newEditProfileBtn, editProfileBtn);
+
     // Préparation de la modale d'édition
-    editProfileBtn?.addEventListener('click', () => {
+    newEditProfileBtn.addEventListener('click', () => {
       const modal = document.getElementById('profile-modal');
       const aliasInput = document.getElementById('prof-alias');
       const aliasError = document.getElementById('prof-alias-error');
@@ -65,6 +72,8 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
           const file = e.target.files[0];
           if (!file) return;
 
+          avatarInput.disabled = true;
+          if (avatarPreview) avatarPreview.style.opacity = '0.5';
           try {
             const code = document.getElementById('student-code-input').value;
             const publicUrl = await db.uploadAvatar(code, file);
@@ -73,7 +82,10 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
             renderAvatarInto(avatarPreview, publicUrl);
             renderAvatarInto(avatarEl, publicUrl);
           } catch (err) {
-            alert("Erreur lors de l'upload de l'avatar: " + err.message);
+            showToast("Erreur lors de l'upload de l'avatar : " + err.message, 'error');
+          } finally {
+            avatarInput.disabled = false;
+            if (avatarPreview) avatarPreview.style.opacity = '';
           }
         };
       }
@@ -100,14 +112,27 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
 
       renderEditInterests();
 
-      // Ajouter intérêt
-      const addInterestBtn = document.getElementById('add-interest-btn');
-      const newInterestInput = document.getElementById('new-interest-input');
+      // Ajouter intérêt — le modal reste dans le DOM entre deux ouvertures,
+      // donc on clone ces éléments pour repartir sans les anciens listeners
+      // (même raison que pour newEditProfileBtn plus haut).
+      let addInterestBtn = document.getElementById('add-interest-btn');
+      let newInterestInput = document.getElementById('new-interest-input');
+      if (addInterestBtn) {
+        const newBtn = addInterestBtn.cloneNode(true);
+        addInterestBtn.parentNode.replaceChild(newBtn, addInterestBtn);
+        addInterestBtn = newBtn;
+      }
+      if (newInterestInput) {
+        const newInput = newInterestInput.cloneNode(true);
+        newInterestInput.parentNode.replaceChild(newInput, newInterestInput);
+        newInterestInput = newInput;
+      }
+
       const handleAddInterest = () => {
         const value = newInterestInput.value.trim();
         if (!value || (profile.interests || []).includes(value)) return;
         if ((profile.interests || []).length >= 6) {
-          alert("Vous ne pouvez ajouter que 6 intérêts maximum.");
+          showToast("Vous ne pouvez ajouter que 6 intérêts maximum.", 'info');
           return;
         }
         profile.interests = [...(profile.interests || []), value];
@@ -143,15 +168,20 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
               aliasError.innerText = "Cet alias est déjà pris, choisis-en un autre.";
               aliasError.classList.remove('hidden');
             } else {
-              alert("Erreur lors de la mise à jour: " + err.message);
+              showToast("Erreur lors de la mise à jour : " + err.message, 'error');
             }
           }
         };
       }
 
-      document.querySelector('.close-profile-modal')?.addEventListener('click', () => {
-        modal.classList.add('hidden');
-      });
+      const closeBtn = document.querySelector('.close-profile-modal');
+      if (closeBtn) {
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        newCloseBtn.addEventListener('click', () => {
+          modal.classList.add('hidden');
+        });
+      }
 
       modal?.classList.remove('hidden');
     });

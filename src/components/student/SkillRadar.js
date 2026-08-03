@@ -1,7 +1,18 @@
 // src/components/student/SkillRadar.js
-import Chart from 'chart.js/auto';
+import {
+  Chart,
+  RadarController,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Legend,
+  Tooltip
+} from 'chart.js';
 import skillCategories from '../../data/skills.json';
 import { computeSkillScores } from '../../utils/scoreCalculator.js';
+
+Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
 let radarInstance = null;
 
@@ -22,6 +33,10 @@ export function renderSkillRadar(projects, endorsements) {
     const total = cat.items.reduce((sum, item) => sum + (scores[item.id] || 0), 0);
     return { label: cat.shortLabel || cat.label, score: Math.round(total / cat.items.length) };
   });
+
+  const radarSummary = categoryScores.map(c => `${c.label} ${c.score} points`).join(', ');
+  ctx.setAttribute('role', 'img');
+  ctx.setAttribute('aria-label', `Radar des compétences : ${radarSummary}`);
 
   if (radarInstance) radarInstance.destroy();
 

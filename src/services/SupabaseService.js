@@ -115,11 +115,12 @@ export class SupabaseService {
     return data || [];
   }
 
-  // Récupérer tous les endossements reçus par un étudiant
-  async getStudentEndorsements(studentCode) {
-    // Récupérer d'abord les IDs de projet de l'étudiant
-    const projects = await this.getProjects(studentCode);
-    const projectIds = projects.map(p => p.id);
+  // Récupérer tous les endossements reçus par un étudiant. Si l'appelant a
+  // déjà les projets sous la main, les passer en 2e argument évite de les
+  // refetcher ici (voir main.js:loadStudentData).
+  async getStudentEndorsements(studentCode, projects = null) {
+    const projs = projects || await this.getProjects(studentCode);
+    const projectIds = projs.map(p => p.id);
     if (projectIds.length === 0) return [];
 
     const { data, error } = await supabase
@@ -129,6 +130,37 @@ export class SupabaseService {
 
     if (error) {
       console.error("getStudentEndorsements error:", error);
+      return [];
+    }
+    return data || [];
+  }
+
+  // Récupérer les projets de plusieurs étudiants en une seule requête (dashboard admin).
+  async getProjectsForStudents(studentCodes) {
+    if (studentCodes.length === 0) return [];
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .in('student_code', studentCodes)
+      .order('pinned', { ascending: false })
+      .order('pin_order', { ascending: true })
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error("getProjectsForStudents error:", error);
+      return [];
+    }
+    return data || [];
+  }
+
+  // Récupérer les endossements de plusieurs projets en une seule requête (dashboard admin).
+  async getEndorsementsForProjectIds(projectIds) {
+    if (projectIds.length === 0) return [];
+    const { data, error } = await supabase
+      .from('endorsements')
+      .select('*')
+      .in('project_id', projectIds);
+    if (error) {
+      console.error("getEndorsementsForProjectIds error:", error);
       return [];
     }
     return data || [];
@@ -316,6 +348,19 @@ export class SupabaseService {
       });
     if (error) {
       console.error("updateStudentBadges error:", error);
+      throw error;
+    }
+    return data;
+  }
+
+  async adminUpdateStudentAlias(studentCode, alias) {
+    const { data, error } = await supabase
+      .rpc('admin_update_student_alias_rpc', {
+        p_student_code: studentCode,
+        p_alias: alias
+      });
+    if (error) {
+      console.error("adminUpdateStudentAlias error:", error);
       throw error;
     }
     return data;

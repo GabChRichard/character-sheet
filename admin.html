@@ -48,7 +48,7 @@
             <h2 style="margin: 0; border: none; padding: 0;">Étudiants</h2>
             <div style="display: flex; gap: 8px;">
               <button id="import-csv-btn" class="btn small secondary" title="Importer CSV">📥 CSV</button>
-              <input type="file" id="csv-file-input" accept=".csv" class="hidden" />
+              <input type="file" id="csv-file-input" accept=".csv" class="hidden" aria-label="Importer un fichier CSV d'étudiants" />
               <button id="toggle-new-student-form-btn" class="btn small primary">+ Nouveau</button>
             </div>
           </div>
@@ -57,8 +57,10 @@
           <div id="new-student-inline-container" class="hidden"
             style="padding: 10px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: var(--radius);">
             <form id="new-student-inline-form" style="display: flex; flex-direction: column; gap: 8px;">
+              <label for="new-stu-github" class="sr-only">Username GitHub</label>
               <input type="text" id="new-stu-github" placeholder="Username GitHub (ex: octocat)" required
                 style="padding: 6px; font-size: 0.8rem;" />
+              <label for="new-stu-alias" class="sr-only">Alias</label>
               <input type="text" id="new-stu-alias" placeholder="Alias (ex: Guerrier Web)"
                 style="padding: 6px; font-size: 0.8rem;" />
               <div style="display: flex; gap: 6px;">
@@ -70,7 +72,8 @@
             </form>
           </div>
         </div>
-        <input type="text" id="search-student" placeholder="Chercher par nom ou code..." class="search-bar" />
+        <label for="search-student" class="sr-only">Rechercher un étudiant par nom</label>
+        <input type="text" id="search-student" placeholder="Chercher par nom..." class="search-bar" />
         <ul id="student-list" class="student-list">
           <!-- Liste générée dynamiquement -->
         </ul>
@@ -79,6 +82,13 @@
       <main class="editor-panel hidden" id="editor-panel">
         <div class="editor-header">
           <h2 id="edit-student-name">Sélectionnez un étudiant</h2>
+          <button type="button" id="edit-alias-btn" class="btn small secondary hidden" title="Éditer l'alias">✏️</button>
+        </div>
+        <div id="edit-alias-form" class="hidden" style="display: flex; gap: 6px; margin-bottom: 12px;">
+          <label for="edit-alias-input" class="sr-only">Alias</label>
+          <input type="text" id="edit-alias-input" style="flex: 1; padding: 6px; font-size: 0.85rem;" />
+          <button type="button" id="save-alias-btn" class="btn primary small">Enregistrer</button>
+          <button type="button" id="cancel-alias-btn" class="btn secondary small">Annuler</button>
         </div>
 
         <div class="tabs">

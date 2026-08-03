@@ -12,9 +12,13 @@ import { renderSoftSkillsEditor } from './components/student/SoftSkillsEditor.js
 import { computeSkillScores, calculateGlobalScore } from './utils/scoreCalculator.js';
 import { resolveGlobalTitle } from './utils/titleResolver.js';
 import { startIdleLogout } from './utils/idleLogout.js';
+import { showToast } from './utils/notify.js';
+import { setupEscapeToClose } from './utils/modalEscape.js';
+import { createAuthFlow } from './utils/authFlow.js';
 import config from './data/config.json';
 
 startIdleLogout(db, 60 * 60 * 1000); // 1h d'inactivité
+setupEscapeToClose(['profile-modal', 'soft-skills-modal', 'project-detail-modal']);
 
 console.log("Feuille de Personnage - Vue Étudiant initialisée (v5.0).");
 
@@ -25,9 +29,13 @@ let lastEndorsements = [];
 
 async function loadStudentData(code, isVisitor = false) {
   currentViewedCode = code;
+  const sheet = document.getElementById('character-sheet');
+  sheet?.classList.add('is-loading');
+
   const student = await db.getStudent(code);
   if (!student) {
-    alert("Impossible de charger les données de l'étudiant.");
+    sheet?.classList.remove('is-loading');
+    showToast("Impossible de charger les données de l'étudiant.", 'error');
     return;
   }
 
@@ -39,7 +47,7 @@ async function loadStudentData(code, isVisitor = false) {
 
   // Charger les projets et endossements
   const projects = await db.getProjects(code);
-  const endorsements = await db.getStudentEndorsements(code);
+  const endorsements = await db.getStudentEndorsements(code, projects);
   lastProjects = projects;
   lastEndorsements = endorsements;
 
@@ -77,25 +85,11 @@ async function loadStudentData(code, isVisitor = false) {
       visitorIndicator.classList.add('hidden');
     }
   }
+
+  sheet?.classList.remove('is-loading');
 }
 
 // --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
-
-function showLoginScreen() {
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('no-account-screen').classList.add('hidden');
-  document.getElementById('character-sheet').classList.add('hidden');
-}
-
-async function showNoAccountScreen() {
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('no-account-screen').classList.remove('hidden');
-  document.getElementById('character-sheet').classList.add('hidden');
-
-  const githubUsername = await db.getGithubUsername();
-  const detected = document.getElementById('no-account-github-username');
-  if (detected) detected.innerText = githubUsername || '(inconnu)';
-}
 
 async function showCharacterSheet(code) {
   myCode = code;
@@ -108,33 +102,19 @@ async function showCharacterSheet(code) {
   await loadStudentData(code, false);
 }
 
-async function bootstrap() {
-  const { data: { session } } = await db.getAuthSession();
-  if (!session) {
-    showLoginScreen();
-    return;
-  }
-
-  const mine = await db.getMyStudent();
-  if (!mine) {
-    await showNoAccountScreen();
-    return;
-  }
-
-  await showCharacterSheet(mine.code);
-}
-
-document.getElementById('github-login-btn')?.addEventListener('click', async () => {
-  await db.signInWithGithub(window.location.origin + window.location.pathname);
-});
-
-document.getElementById('no-account-retry-btn')?.addEventListener('click', () => {
-  bootstrap();
-});
-
-document.getElementById('no-account-logout-btn')?.addEventListener('click', async () => {
-  await db.signOut();
-  window.location.reload();
+const { bootstrap } = createAuthFlow({
+  db,
+  screenIds: {
+    loginScreen: 'login-screen',
+    noAccountScreen: 'no-account-screen',
+    mainScreen: 'character-sheet',
+    noAccountGithubUsernameId: 'no-account-github-username',
+    loginBtnId: 'github-login-btn',
+    retryBtnId: 'no-account-retry-btn',
+    noAccountLogoutBtnId: 'no-account-logout-btn'
+  },
+  getMine: () => db.getMyStudent(),
+  onSignedIn: (mine) => showCharacterSheet(mine.code)
 });
 
 // Déconnexion
@@ -171,23 +151,31 @@ themeButtons.forEach(btn => {
 updateActiveThemeButton();
 
 // Visiter un pair
-document.getElementById('search-peer-btn')?.addEventListener('click', async () => {
+async function searchPeer() {
   const peerAlias = document.getElementById('peer-alias-input').value.trim();
   if (!peerAlias) return;
 
   const peer = await db.searchStudentByAlias(peerAlias);
   if (!peer) {
-    alert("Aucun étudiant trouvé avec cet alias.");
+    showToast("Aucun étudiant trouvé avec cet alias.", 'error');
     return;
   }
 
   if (peer.code === myCode) {
-    alert("Vous êtes déjà sur votre profil.");
+    showToast("Vous êtes déjà sur votre profil.", 'info');
     return;
   }
 
   document.getElementById('peer-alias-input').value = '';
   await loadStudentData(peer.code, true);
+}
+
+document.getElementById('search-peer-btn')?.addEventListener('click', searchPeer);
+document.getElementById('peer-alias-input')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    searchPeer();
+  }
 });
 
 // Retourner à son profil

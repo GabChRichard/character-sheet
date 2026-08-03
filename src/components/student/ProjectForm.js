@@ -4,6 +4,7 @@ import skillCategories from '../../data/skills.json';
 import coursesData from '../../data/courses.json';
 import config from '../../data/config.json';
 import { getSkillId, getSkillHours, getSkillSelfAssessment } from '../../utils/skillsIndex.js';
+import { showToast } from '../../utils/notify.js';
 
 export function renderProjectForm(project = null, onActionCompleted = null) {
   const body = document.getElementById('project-modal-body');
@@ -28,7 +29,7 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
   }
 
   body.innerHTML = `
-    <span class="close-modal" id="close-project-form-modal">&times;</span>
+    <button type="button" class="close-modal" id="close-project-form-modal" aria-label="Fermer">&times;</button>
     <h2 style="font-family: var(--font-title); color: var(--accent-color); margin-bottom: 15px;">
       ${isEdit ? 'Éditer le projet' : 'Ajouter un projet'}
     </h2>
@@ -98,13 +99,13 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
                     <small class="toggle-row-label ${checked ? '' : 'hidden'}">Temps investi</small>
                     <div class="hours-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${hours}">
                       ${config.scoring.hoursTiers.map(t => `
-                        <button type="button" class="btn small hours-btn ${hours === t.hours ? 'active' : ''}" data-hours="${t.hours}">${t.label}</button>
+                        <button type="button" class="btn small hours-btn ${hours === t.hours ? 'active' : ''}" data-hours="${t.hours}" aria-pressed="${hours === t.hours}">${t.label}</button>
                       `).join('')}
                     </div>
                     <small class="toggle-row-label ${checked ? '' : 'hidden'}">Autoévaluation</small>
                     <div class="assessment-toggle ${checked ? '' : 'hidden'}" data-skill-id="${item.id}" data-value="${assessment || ''}">
                       ${config.scoring.selfAssessmentTiers.map(t => `
-                        <button type="button" class="btn small assessment-btn ${assessment === t.value ? 'active' : ''}" data-assessment="${t.value}">${t.label}</button>
+                        <button type="button" class="btn small assessment-btn ${assessment === t.value ? 'active' : ''}" data-assessment="${t.value}" aria-pressed="${assessment === t.value}">${t.label}</button>
                       `).join('')}
                     </div>
                   </div>
@@ -157,7 +158,10 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       const toggle = btn.closest('.hours-toggle');
       if (!toggle) return;
       toggle.dataset.value = btn.dataset.hours;
-      toggle.querySelectorAll('.hours-btn').forEach(b => b.classList.toggle('active', b === btn));
+      toggle.querySelectorAll('.hours-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
     });
   });
 
@@ -167,7 +171,10 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       const toggle = btn.closest('.assessment-toggle');
       if (!toggle) return;
       toggle.dataset.value = btn.dataset.assessment;
-      toggle.querySelectorAll('.assessment-btn').forEach(b => b.classList.toggle('active', b === btn));
+      toggle.querySelectorAll('.assessment-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
     });
   });
 
@@ -198,6 +205,9 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
   // Soumission du formulaire
   document.getElementById('project-edit-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
 
     let finalCourse = courseSelect.value;
     if (finalCourse === 'Autre') {
@@ -242,7 +252,9 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       closeForm();
       if (onActionCompleted) onActionCompleted();
     } catch (err) {
-      alert("Erreur lors de la sauvegarde: " + err.message);
+      showToast("Erreur lors de la sauvegarde : " + err.message, 'error');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 }

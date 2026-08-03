@@ -4,6 +4,7 @@ import { skillsIndex, getSkillId, getSkillHours, getSkillSelfAssessment } from '
 import { resolveEndorsementPoints } from '../../utils/scoreCalculator.js';
 import config from '../../data/config.json';
 import { renderProjectForm } from './ProjectForm.js';
+import { showToast, confirmDialog } from '../../utils/notify.js';
 
 export function openProjectModal(project, isOwner, visitorCode, currentStudentCode, onActionCompleted) {
   const modal = document.getElementById('project-detail-modal');
@@ -32,7 +33,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
   const dots = "●".repeat(categoryCount);
 
   body.innerHTML = `
-    <span class="close-modal" id="close-project-modal">&times;</span>
+    <button type="button" class="close-modal" id="close-project-modal" aria-label="Fermer">&times;</button>
     <h2 style="font-family: var(--font-title); color: var(--accent-color); margin-bottom: 8px;">${project.name}</h2>
     <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; display: flex; gap: 15px;">
       <span>🏫 ${project.course || 'Cours non spécifié'}</span>
@@ -112,7 +113,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
         await renderDetailsView(project, isOwner, visitorCode, currentStudentCode, onActionCompleted);
         if (onActionCompleted) onActionCompleted();
       } catch (err) {
-        alert("Erreur endossement: " + err.message);
+        showToast("Erreur endossement : " + err.message, 'error');
         endorseBtn.disabled = false;
       }
     });
@@ -129,13 +130,13 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
     });
 
     deleteBtn?.addEventListener('click', async () => {
-      if (confirm('Supprimer définitivement ce projet ?')) {
+      if (await confirmDialog('Supprimer définitivement ce projet ?', { confirmLabel: 'Supprimer' })) {
         try {
           await db.deleteProject(project.id);
           modal.classList.add('hidden');
           if (onActionCompleted) onActionCompleted();
         } catch (err) {
-          alert("Erreur lors de la suppression: " + err.message);
+          showToast("Erreur lors de la suppression : " + err.message, 'error');
         }
       }
     });
@@ -149,7 +150,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
         let nextOrder = 1;
         if (newPinnedState) {
           if (pinnedProjects.length >= 3) {
-            alert("Vous avez déjà épinglé le maximum de 3 projets.");
+            showToast("Vous avez déjà épinglé le maximum de 3 projets.", 'info');
             return;
           }
           nextOrder = pinnedProjects.length + 1;
@@ -162,7 +163,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
         await renderDetailsView(project, isOwner, visitorCode, currentStudentCode, onActionCompleted);
         if (onActionCompleted) onActionCompleted();
       } catch (err) {
-        alert("Erreur d'épinglage : " + err.message);
+        showToast("Erreur d'épinglage : " + err.message, 'error');
       }
     });
   }

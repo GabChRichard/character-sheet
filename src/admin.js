@@ -8,6 +8,8 @@ import { renderBadgeToggles, getEditedBadges } from './components/admin/BadgeTog
 import { generateRandomStudentCode } from './components/admin/CodeGenerator.js';
 import { computeSkillScores } from './utils/scoreCalculator.js';
 import { startIdleLogout } from './utils/idleLogout.js';
+import { showToast } from './utils/notify.js';
+import { createAuthFlow } from './utils/authFlow.js';
 import skillsData from './data/skills.json';
 
 startIdleLogout(db, 60 * 60 * 1000); // 1h d'inactivité
@@ -22,22 +24,6 @@ console.log("Interface d'administration initialisée (v6.0).");
 
 // --- AUTHENTIFICATION (GitHub OAuth via Supabase Auth) ---
 
-function showLoginScreen() {
-  document.getElementById('admin-login').classList.remove('hidden');
-  document.getElementById('admin-no-account').classList.add('hidden');
-  document.getElementById('admin-dashboard').classList.add('hidden');
-}
-
-async function showNoAccountScreen() {
-  document.getElementById('admin-login').classList.add('hidden');
-  document.getElementById('admin-no-account').classList.remove('hidden');
-  document.getElementById('admin-dashboard').classList.add('hidden');
-
-  const githubUsername = await db.getGithubUsername();
-  const detected = document.getElementById('admin-no-account-github-username');
-  if (detected) detected.innerText = githubUsername || '(inconnu)';
-}
-
 async function showDashboard(admin) {
   currentAdmin = { username: admin.username, displayName: admin.display_name, role: admin.role };
   document.getElementById('admin-login').classList.add('hidden');
@@ -50,48 +36,50 @@ async function showDashboard(admin) {
   await refreshDashboard();
 }
 
-async function bootstrap() {
-  const { data: { session } } = await db.getAuthSession();
-  if (!session) {
-    showLoginScreen();
-    return;
-  }
-
-  const mine = await db.getMyAdmin();
-  if (!mine) {
-    await showNoAccountScreen();
-    return;
-  }
-
-  await showDashboard(mine);
-}
-
-document.getElementById('admin-github-login-btn')?.addEventListener('click', async () => {
-  await db.signInWithGithub(window.location.origin + window.location.pathname);
-});
-
-document.getElementById('admin-no-account-retry-btn')?.addEventListener('click', () => {
-  bootstrap();
-});
-
-document.getElementById('admin-no-account-logout-btn')?.addEventListener('click', async () => {
-  await db.signOut();
-  window.location.reload();
+const { bootstrap } = createAuthFlow({
+  db,
+  screenIds: {
+    loginScreen: 'admin-login',
+    noAccountScreen: 'admin-no-account',
+    mainScreen: 'admin-dashboard',
+    noAccountGithubUsernameId: 'admin-no-account-github-username',
+    loginBtnId: 'admin-github-login-btn',
+    retryBtnId: 'admin-no-account-retry-btn',
+    noAccountLogoutBtnId: 'admin-no-account-logout-btn'
+  },
+  getMine: () => db.getMyAdmin(),
+  onSignedIn: (mine) => showDashboard(mine)
 });
 
 // Rafraîchir les données globales du dashboard
 async function refreshDashboard() {
+  const listEl = document.getElementById('student-list');
+  if (listEl) listEl.innerHTML = '<li style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Chargement...</li>';
+
   studentsCache = await db.getAllStudents();
   projectsCache = {};
   endorsementsCache = {};
 
-  // Charger tous les projets et endossements en parallèle pour le calcul du score à la volée
-  await Promise.all(studentsCache.map(async (student) => {
-    const projs = await db.getProjects(student.code);
-    const ends = await db.getStudentEndorsements(student.code);
-    projectsCache[student.code] = projs;
-    endorsementsCache[student.code] = ends;
-  }));
+  // Deux requêtes groupées au lieu de ~3 par étudiant : une pour tous les
+  // projets, une pour tous les endossements de ces projets.
+  const codes = studentsCache.map(s => s.code);
+  codes.forEach(code => {
+    projectsCache[code] = [];
+    endorsementsCache[code] = [];
+  });
+
+  const allProjects = await db.getProjectsForStudents(codes);
+  const projectIdToCode = {};
+  allProjects.forEach(p => {
+    projectsCache[p.student_code]?.push(p);
+    projectIdToCode[p.id] = p.student_code;
+  });
+
+  const allEndorsements = await db.getEndorsementsForProjectIds(allProjects.map(p => p.id));
+  allEndorsements.forEach(e => {
+    const code = projectIdToCode[e.project_id];
+    if (code) endorsementsCache[code]?.push(e);
+  });
 
   renderStudentList(studentsCache, projectsCache, endorsementsCache, async (student) => {
     await loadStudentEditor(student);
@@ -106,15 +94,19 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
   window.location.reload();
 });
 
-// Événement recherche
+// Événement recherche (debounce pour éviter de re-render à chaque frappe)
+let searchDebounceTimer = null;
 document.getElementById('search-student')?.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase().trim();
-  const filtered = studentsCache.filter(s =>
-    (s.profile.alias || '').toLowerCase().includes(query)
-  );
-  renderStudentList(filtered, projectsCache, endorsementsCache, async (student) => {
-    await loadStudentEditor(student);
-  });
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    const filtered = studentsCache.filter(s =>
+      (s.profile.alias || '').toLowerCase().includes(query)
+    );
+    renderStudentList(filtered, projectsCache, endorsementsCache, async (student) => {
+      await loadStudentEditor(student);
+    });
+  }, 200);
 });
 
 // Formulaire Ajout Étudiant Inline
@@ -142,6 +134,8 @@ document.getElementById('new-student-inline-form')?.addEventListener('submit', a
   if (!githubUsername) return;
 
   const code = generateRandomStudentCode();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
 
   try {
     const list = [{
@@ -167,7 +161,9 @@ document.getElementById('new-student-inline-form')?.addEventListener('submit', a
     e.target.reset();
     await refreshDashboard();
   } catch (err) {
-    alert("Erreur lors de la création : " + err.message);
+    showToast("Erreur lors de la création : " + err.message, 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 });
 
@@ -212,7 +208,9 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
       }
     }
 
+    const importBtn = document.getElementById('import-csv-btn');
     if (students.length > 0) {
+      if (importBtn) importBtn.disabled = true;
       try {
         await db.bulkImportStudents(students);
         await db.logAction({
@@ -220,10 +218,12 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
           target_student: 'N/A',
           detail: `Import de ${students.length} étudiants via CSV`
         });
-        alert(`${students.length} étudiants importés avec succès !`);
+        showToast(`${students.length} étudiants importés avec succès !`, 'success');
         await refreshDashboard();
       } catch (err) {
-        alert("Erreur d'import : " + err.message);
+        showToast("Erreur d'import : " + err.message, 'error');
+      } finally {
+        if (importBtn) importBtn.disabled = false;
       }
     }
     e.target.value = ''; // reset input
@@ -235,6 +235,8 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
 async function loadStudentEditor(student) {
   document.getElementById('editor-panel').classList.remove('hidden');
   document.getElementById('edit-student-name').innerText = student.profile.alias || "Anonyme";
+  document.getElementById('edit-alias-btn')?.classList.remove('hidden');
+  document.getElementById('edit-alias-form')?.classList.add('hidden');
   currentStudentCode = student.code;
 
   renderBadgeToggles(student.badges, currentAdmin.role);
@@ -346,9 +348,11 @@ async function renderAuditLog() {
 }
 
 // Sauvegarde des badges
-document.querySelector('.save-btn')?.addEventListener('click', async () => {
+document.querySelector('.save-btn')?.addEventListener('click', async (e) => {
   if (!currentStudentCode || !currentAdmin) return;
 
+  const saveBtn = e.currentTarget;
+  saveBtn.disabled = true;
   try {
     const newBadges = getEditedBadges();
     await db.updateStudentBadges(currentStudentCode, newBadges);
@@ -360,10 +364,57 @@ document.querySelector('.save-btn')?.addEventListener('click', async () => {
       detail: `Badges mis à jour : ${badgeNames}`
     });
 
-    alert("✅ Badges sauvegardés avec succès !");
+    showToast("Badges sauvegardés avec succès !", 'success');
     await refreshDashboard();
   } catch (err) {
-    alert("Erreur lors de la sauvegarde : " + err.message);
+    showToast("Erreur lors de la sauvegarde : " + err.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
+
+// Édition de l'alias d'un·e étudiant·e
+document.getElementById('edit-alias-btn')?.addEventListener('click', () => {
+  const nameEl = document.getElementById('edit-student-name');
+  const input = document.getElementById('edit-alias-input');
+  input.value = nameEl.innerText;
+  document.getElementById('edit-alias-form').classList.remove('hidden');
+  input.focus();
+});
+
+document.getElementById('cancel-alias-btn')?.addEventListener('click', () => {
+  document.getElementById('edit-alias-form').classList.add('hidden');
+});
+
+document.getElementById('edit-alias-input')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('save-alias-btn')?.click();
+  }
+});
+
+document.getElementById('save-alias-btn')?.addEventListener('click', async () => {
+  const newAlias = document.getElementById('edit-alias-input').value.trim();
+  if (!newAlias || !currentStudentCode) return;
+
+  try {
+    await db.adminUpdateStudentAlias(currentStudentCode, newAlias);
+    await db.logAction({
+      action: 'alias_updated',
+      target_student: currentStudentCode,
+      detail: `Alias changé pour "${newAlias}"`
+    });
+
+    document.getElementById('edit-student-name').innerText = newAlias;
+    document.getElementById('edit-alias-form').classList.add('hidden');
+    showToast("Alias mis à jour avec succès !", 'success');
+    await refreshDashboard();
+  } catch (err) {
+    if (err.code === '23505') {
+      showToast("Cet alias est déjà pris.", 'error');
+    } else {
+      showToast("Erreur lors de la mise à jour de l'alias : " + err.message, 'error');
+    }
   }
 });
 

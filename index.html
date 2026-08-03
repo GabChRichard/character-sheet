@@ -17,7 +17,7 @@
     <div id="app">
 
       <!-- ====== ÉCRAN DE CONNEXION ====== -->
-      <section id="login-screen" class="login-screen">
+      <section id="login-screen" class="login-screen hidden">
         <div class="login-box">
           <div class="login-logo">🎓</div>
           <h1>Feuille de Personnage</h1>
@@ -113,6 +113,7 @@
               <h2>Chercher un pair</h2>
               <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Entrez l'alias d'un étudiant pour endosser ses projets.</p>
               <div class="input-group">
+                <label for="peer-alias-input" class="sr-only">Alias d'un pair</label>
                 <input type="text" id="peer-alias-input" placeholder="Ex: Ecureuil_23" />
                 <button id="search-peer-btn" class="btn primary" style="padding: 0 16px;">Chercher</button>
               </div>
@@ -162,11 +163,11 @@
     <!-- ====== MODAL PROFIL (ÉDITION) ====== -->
     <div id="profile-modal" class="modal hidden">
       <div class="modal-content">
-        <span class="close-modal close-profile-modal">&times;</span>
+        <button type="button" class="close-modal close-profile-modal" aria-label="Fermer">&times;</button>
         <h2>Éditer le profil</h2>
         <form id="profile-form">
           <div class="form-group">
-            <label>Photo de profil</label>
+            <label for="prof-avatar-input">Photo de profil</label>
             <div style="display: flex; align-items: center; gap: 14px;">
               <div class="avatar" id="prof-avatar-preview" style="width: 64px; height: 64px; font-size: 28px;">🧙‍♂️</div>
               <label for="prof-avatar-input" class="btn secondary" style="cursor: pointer;">Changer l'image</label>
@@ -183,7 +184,7 @@
             <textarea id="prof-objectif" rows="3" placeholder="Quel est votre objectif ?"></textarea>
           </div>
           <div class="form-group">
-            <label>Intérêts (Tags)</label>
+            <label for="new-interest-input">Intérêts (Tags)</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="new-interest-input" placeholder="Ex: 3D, Web, Design" />
               <button type="button" id="add-interest-btn" class="btn secondary">Ajouter</button>
@@ -198,7 +199,7 @@
     <!-- ====== MODAL SAVOIR-ÊTRE (CATALOGUE) ====== -->
     <div id="soft-skills-modal" class="modal hidden">
       <div class="modal-content">
-        <span class="close-modal close-soft-skills-modal">&times;</span>
+        <button type="button" class="close-modal close-soft-skills-modal" aria-label="Fermer">&times;</button>
         <h2>Ajouter des savoir-être</h2>
         <p id="soft-skills-count" class="counter"></p>
         <div id="soft-skills-catalog"></div>
