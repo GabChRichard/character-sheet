@@ -184,10 +184,9 @@ document.getElementById('csv-file-input')?.addEventListener('change', async (e) 
     let start = 0;
     if (lines[0].toLowerCase().includes('githubusername')) start = 1; // skip header
 
+    const githubCodeMap = await db.getGithubCodeMap();
     const existingCodeByGithub = Object.fromEntries(
-      studentsCache
-        .filter(s => s.github_username)
-        .map(s => [s.github_username.toLowerCase(), s.code])
+      githubCodeMap.map(s => [s.github_username.toLowerCase(), s.code])
     );
 
     const students = [];

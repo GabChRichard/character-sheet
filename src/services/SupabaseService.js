@@ -329,12 +329,29 @@ export class SupabaseService {
   // --- LECTURE & ÉCRITURES ADMIN ---
 
   async getAllStudents() {
+    // `github_username` n'est volontairement pas accordée à anon/authenticated
+    // (GRANT SELECT colonne par colonne, schema_v6.sql/v7.sql) — la sélectionner
+    // ici ferait échouer toute la requête en 403. Voir getGithubCodeMap() pour
+    // y accéder via une RPC SECURITY DEFINER réservée aux admins.
     const { data, error } = await supabase
       .from('students')
-      .select('code, github_username, profile, badges, updated_at, updated_by')
+      .select('code, profile, badges, updated_at, updated_by')
       .order('code', { ascending: true });
     if (error) {
       console.error("getAllStudents error:", error);
+      return [];
+    }
+    return data || [];
+  }
+
+  // Mapping code <-> github_username pour un usage admin (ex. réutilisation
+  // du code existant lors d'un import CSV) — passe par une RPC SECURITY
+  // DEFINER plutôt qu'un SELECT direct, github_username n'étant pas une
+  // colonne accordée à anon/authenticated.
+  async getGithubCodeMap() {
+    const { data, error } = await supabase.rpc('admin_get_github_code_map');
+    if (error) {
+      console.error("getGithubCodeMap error:", error);
       return [];
     }
     return data || [];
