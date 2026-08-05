@@ -70,19 +70,22 @@ async function loadStudentData(code, isVisitor = false) {
   renderLevelBar(levelInfo, config);
   renderBadgeWall(student.badges);
   renderSoftSkillsEditor(student.profile, isOwner, () => loadStudentData(code, isVisitor));
-  renderProjectGrid(projects, isOwner, isVisitor ? myCode : null, code, () => loadStudentData(code, isVisitor));
+  renderProjectGrid(projects, isOwner, isVisitor ? myCode : null, code, () => loadStudentData(code, isVisitor), endorsements);
   renderSkillPanel(projects, endorsements);
   renderSkillRadar(projects, endorsements);
 
   // Mettre à jour l'état du mode visiteur dans l'interface
   const visitorIndicator = document.getElementById('visitor-mode-indicator');
   const visitorMsg = document.getElementById('visitor-msg');
+  const exitVisitorBtnTop = document.getElementById('exit-visitor-btn-top');
   if (visitorIndicator && visitorMsg) {
     if (isVisitor) {
       visitorMsg.innerText = `Mode Visiteur : ${student.profile.alias || code}`;
       visitorIndicator.classList.remove('hidden');
+      exitVisitorBtnTop?.classList.remove('hidden');
     } else {
       visitorIndicator.classList.add('hidden');
+      exitVisitorBtnTop?.classList.add('hidden');
     }
   }
 
@@ -179,9 +182,11 @@ document.getElementById('peer-alias-input')?.addEventListener('keydown', (e) => 
 });
 
 // Retourner à son profil
-document.getElementById('exit-visitor-btn')?.addEventListener('click', async () => {
+async function exitVisitorMode() {
   if (myCode) {
     await loadStudentData(myCode, false);
   }
-});
+}
+document.getElementById('exit-visitor-btn')?.addEventListener('click', exitVisitorMode);
+document.getElementById('exit-visitor-btn-top')?.addEventListener('click', exitVisitorMode);
 

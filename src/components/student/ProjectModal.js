@@ -38,6 +38,7 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
     <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; display: flex; gap: 15px;">
       <span>🏫 ${project.course || 'Cours non spécifié'}</span>
       <span>📅 Semestre: ${project.semester || 'Non spécifié'}</span>
+      <span>${project.team ? '👥 Équipe' : '🧍 Solo'}</span>
     </div>
 
     <div style="margin-bottom: 20px;">

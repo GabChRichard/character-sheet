@@ -52,12 +52,15 @@ export function computeSkillScores(projects, endorsements) {
     // Boost des endossements sur ce projet
     const endorsementBoost = resolveEndorsementPoints(projectEndorsements);
 
+    // Un projet réalisé en équipe vaut 25% moins de points qu'un projet solo.
+    const teamMultiplier = project.team ? 0.75 : 1;
+
     for (const entry of (project.skills || [])) {
       const skillId = getSkillId(entry);
       const hoursBonus = resolveHoursPoints(getSkillHours(entry));
       const selfAssessmentBonus = resolveSelfAssessmentPoints(getSkillSelfAssessment(entry));
       if (!scores[skillId]) scores[skillId] = 0;
-      scores[skillId] += projectValue + endorsementBoost + hoursBonus + selfAssessmentBonus;
+      scores[skillId] += Math.round((projectValue + endorsementBoost + hoursBonus + selfAssessmentBonus) * teamMultiplier);
     }
   }
 

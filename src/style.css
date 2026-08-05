@@ -171,7 +171,7 @@ a { color: var(--accent-color); }
   border-radius: var(--radius);
   font-size: 0.95rem;
   font-family: var(--font-main);
-  background: rgba(255,255,255,0.6);
+  background: rgba(0,0,0,0.15);
   color: var(--text-main);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -853,6 +853,10 @@ html[data-theme="parchment"] {
 
 html[data-theme="parchment"] .btn.theme-btn {
   background: var(--surface-color);
+}
+
+html[data-theme="parchment"] .skill-blocks .empty {
+  color: #4a4a4a;
 }
 
 /* ==============================

@@ -2,8 +2,10 @@
 import { openProjectModal } from './ProjectModal.js';
 import { renderProjectForm } from './ProjectForm.js';
 import { skillsIndex, getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
+import { EndorsementService } from '../../services/EndorsementService.js';
+import { showToast } from '../../utils/notify.js';
 
-export function renderProjectGrid(projects, isOwner, visitorCode, currentStudentCode, onUpdate) {
+export function renderProjectGrid(projects, isOwner, visitorCode, currentStudentCode, onUpdate, endorsements = []) {
   const root = document.getElementById('project-grid-root');
   if (!root) return;
 
@@ -36,7 +38,7 @@ export function renderProjectGrid(projects, isOwner, visitorCode, currentStudent
     `;
   } else {
     pinnedProjects.forEach(proj => {
-      const card = createProjectCard(proj, true);
+      const card = createProjectCard(proj, true, visitorCode, isOwner, endorsements, onUpdate);
       card.addEventListener('click', () => {
         openProjectModal(proj, isOwner, visitorCode, currentStudentCode, onUpdate);
       });
@@ -79,7 +81,7 @@ export function renderProjectGrid(projects, isOwner, visitorCode, currentStudent
     `;
   } else {
     otherProjects.forEach(proj => {
-      const card = createProjectCard(proj, false);
+      const card = createProjectCard(proj, false, visitorCode, isOwner, endorsements, onUpdate);
       card.addEventListener('click', () => {
         openProjectModal(proj, isOwner, visitorCode, currentStudentCode, onUpdate);
       });
@@ -104,7 +106,7 @@ export function renderProjectGrid(projects, isOwner, visitorCode, currentStudent
   }
 }
 
-function createProjectCard(proj, isPinned) {
+function createProjectCard(proj, isPinned, visitorCode, isOwner, endorsements, onUpdate) {
   const card = document.createElement('div');
   card.className = `project-card filled ${isPinned ? 'pinned-card' : ''}`;
   card.style.position = 'relative';
@@ -123,12 +125,40 @@ function createProjectCard(proj, isPinned) {
   card.innerHTML = `
     ${thumbnail}
     <div class="project-name">${proj.name}</div>
-    <div class="project-course">${proj.course || 'Projet'}</div>
+    <div class="project-course">${proj.course || 'Projet'} ${proj.team ? '· 👥 Équipe' : '· 🧍 Solo'}</div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
       <div class="project-value" title="${categoryCount} catégorie(s) de compétences">${dots}</div>
       <span class="project-points" style="font-size: 0.8rem; color: var(--text-muted);">${weight} pts</span>
     </div>
   `;
+
+  if (visitorCode && !isOwner) {
+    const hasEndorsed = (endorsements || []).some(e => e.project_id === proj.id && e.from_code === visitorCode);
+    const endorseBtn = document.createElement('button');
+    endorseBtn.type = 'button';
+    endorseBtn.className = 'btn icon-btn quick-endorse-btn';
+    endorseBtn.title = hasEndorsed ? "Retirer l'endossement" : 'Endosser ce projet';
+    endorseBtn.style.position = 'absolute';
+    endorseBtn.style.top = '8px';
+    endorseBtn.style.right = '8px';
+    endorseBtn.innerText = hasEndorsed ? '✅' : '👍';
+
+    endorseBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      endorseBtn.disabled = true;
+      const result = hasEndorsed
+        ? await EndorsementService.unendorseProject(visitorCode, proj.id)
+        : await EndorsementService.endorseProject(visitorCode, proj.id);
+      if (result !== null) {
+        if (onUpdate) onUpdate();
+      } else {
+        endorseBtn.disabled = false;
+        showToast("Erreur lors de l'endossement.", 'error');
+      }
+    });
+
+    card.appendChild(endorseBtn);
+  }
 
   return card;
 }

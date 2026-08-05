@@ -189,7 +189,8 @@ export class SupabaseService {
         semester: projectData.semester || '',
         skills: projectData.skills || [],
         link: projectData.link || '',
-        thumbnail_url: projectData.thumbnailUrl || ''
+        thumbnail_url: projectData.thumbnailUrl || '',
+        team: projectData.team || false
       })
       .select()
       .single();
@@ -210,6 +211,7 @@ export class SupabaseService {
         semester: projectData.semester || '',
         skills: projectData.skills || [],
         link: projectData.link || '',
+        team: projectData.team || false,
         ...(projectData.thumbnailUrl !== undefined && { thumbnail_url: projectData.thumbnailUrl })
       })
       .eq('id', projectId)

@@ -77,7 +77,7 @@ function createSkillRow(skill, maxScore) {
   const filledBlocksCount = Math.round((percentage / 100) * totalBlocks);
   const filledChars = "█".repeat(filledBlocksCount);
   const emptyChars = "░".repeat(totalBlocks - filledBlocksCount);
-  const blocksHtml = `${filledChars}<span class="empty" style="color: var(--border-color);">${emptyChars}</span>`;
+  const blocksHtml = `${filledChars}<span class="empty">${emptyChars}</span>`;
 
   const level = resolveLevel(skill.score, config.skillLevels);
 

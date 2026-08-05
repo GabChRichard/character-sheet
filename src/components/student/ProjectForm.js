@@ -69,6 +69,15 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       </div>
 
       <div class="form-group">
+        <label>Réalisation</label>
+        <div class="team-toggle" data-value="${isEdit && project.team ? 'true' : 'false'}">
+          <button type="button" class="btn small team-btn ${!(isEdit && project.team) ? 'active' : ''}" data-team="false" aria-pressed="${!(isEdit && project.team)}">🧍 Solo</button>
+          <button type="button" class="btn small team-btn ${isEdit && project.team ? 'active' : ''}" data-team="true" aria-pressed="${!!(isEdit && project.team)}">👥 Équipe</button>
+        </div>
+        <small>Un projet en équipe vaut 25 % moins de points par compétence.</small>
+      </div>
+
+      <div class="form-group">
         <label>Miniature du projet</label>
         <div style="display: flex; align-items: center; gap: 14px;">
           <div id="form-proj-thumbnail-preview" style="width: 64px; height: 48px; border-radius: var(--radius); border: 1px solid var(--border-color); background: rgba(0,0,0,0.03); background-size: cover; background-position: center; flex-shrink: 0;"></div>
@@ -78,7 +87,7 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       </div>
 
       <div class="form-group">
-        <label>Compétences mobilisées <small>(cochez une compétence, puis indiquez le temps investi)</small></label>
+        <label>Compétences mobilisées <small>(cochez ce que VOUS avez personnellement fait — même en équipe, décrivez votre propre implication, pas celle du groupe — puis indiquez le temps investi)</small></label>
         ${skillCategories.map(cat => `
           <fieldset class="skills-fieldset">
             <legend>${cat.icon} ${cat.label}</legend>
@@ -178,6 +187,19 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
     });
   });
 
+  // Sélection solo/équipe
+  document.querySelectorAll('.team-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const toggle = btn.closest('.team-toggle');
+      if (!toggle) return;
+      toggle.dataset.value = btn.dataset.team;
+      toggle.querySelectorAll('.team-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+    });
+  });
+
   // Afficher / masquer le champ personnalisé si "Autre" est sélectionné
   const courseSelect = document.getElementById('form-proj-course');
   const courseCustomInput = document.getElementById('form-proj-course-custom');
@@ -230,7 +252,8 @@ export function renderProjectForm(project = null, onActionCompleted = null) {
       course: finalCourse,
       semester: session && year ? `${session} ${year}` : '',
       skills: selectedSkills,
-      link: document.getElementById('form-proj-link').value.trim()
+      link: document.getElementById('form-proj-link').value.trim(),
+      team: document.querySelector('.team-toggle')?.dataset.value === 'true'
     };
 
     const studentCode = document.getElementById('student-code-input').value;
