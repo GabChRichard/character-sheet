@@ -25,7 +25,10 @@ async function renderDetailsView(project, isOwner, visitorCode, currentStudentCo
   const projectEndorsements = allEndorsements.filter(e => e.project_id === project.id);
   const hasEndorsed = visitorCode ? projectEndorsements.some(e => e.from_code === visitorCode) : false;
 
-  const skillWeight = (project.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
+  const rawSkillWeight = (project.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
+  // Un projet en équipe vaut 25% moins de points affichés — le score de
+  // compétences (scoreCalculator.js) n'est lui jamais réduit.
+  const skillWeight = Math.round(rawSkillWeight * (project.team ? 0.75 : 1));
   // Un dot par catégorie de hard skills mobilisée par le projet (5 catégories = 5 dots max)
   const categoryCount = new Set(
     (project.skills || []).map(s => skillsIndex[getSkillId(s)]?.categoryId).filter(Boolean)

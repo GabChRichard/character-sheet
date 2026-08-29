@@ -111,7 +111,10 @@ function createProjectCard(proj, isPinned, visitorCode, isOwner, endorsements, o
   card.className = `project-card filled ${isPinned ? 'pinned-card' : ''}`;
   card.style.position = 'relative';
 
-  const weight = (proj.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
+  const rawWeight = (proj.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
+  // Un projet en équipe vaut 25% moins de points affichés sur la carte —
+  // le score de compétences (scoreCalculator.js) n'est lui jamais réduit.
+  const weight = Math.round(rawWeight * (proj.team ? 0.75 : 1));
   // Un dot par catégorie de hard skills mobilisée par le projet (5 catégories = 5 dots max)
   const categoryCount = new Set(
     (proj.skills || []).map(s => skillsIndex[getSkillId(s)]?.categoryId).filter(Boolean)
