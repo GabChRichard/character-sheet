@@ -1286,10 +1286,13 @@ html[data-theme="doom"] .btn.theme-btn.active {
 }
 .form-group.ct-color label {
   margin-bottom: 0;
+  white-space: nowrap;
 }
 
-.ct-color input[type="color"] {
+/* ID dans le sélecteur : doit l'emporter sur la règle générique .form-group input */
+#custom-theme-modal .ct-color input[type="color"] {
   width: 40px;
+  min-width: 40px;
   height: 40px;
   padding: 0;
   border: 1px solid var(--border-color);
@@ -1316,4 +1319,43 @@ html[data-theme="doom"] .btn.theme-btn.active {
 
 @media (max-width: 600px) {
   .ct-colors { grid-template-columns: 1fr; }
+}
+
+/* Éléments aux couleurs codées en dur (héritées de Parchemin) : on les
+   recalcule depuis les variables du thème personnalisé */
+html[data-theme="custom"] .project-card {
+  background: color-mix(in srgb, var(--surface-color) 85%, var(--bg-color));
+}
+
+html[data-theme="custom"] .avatar,
+html[data-theme="custom"] .level-bar-bg {
+  background-color: var(--tag-bg);
+}
+
+html[data-theme="custom"] .level-card {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent-color) 6%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 15%, transparent) 100%);
+}
+
+html[data-theme="custom"] .project-thumbnail-placeholder {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--accent-color) 12%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 4%, transparent) 100%);
+}
+
+html[data-theme="custom"] .btn.secondary:hover,
+html[data-theme="custom"] .btn.theme-btn.active,
+html[data-theme="custom"] .soft-skill-item:hover,
+html[data-theme="custom"] .skills-checkboxes label:hover,
+html[data-theme="custom"] .hours-btn.active,
+html[data-theme="custom"] .assessment-btn.active,
+html[data-theme="custom"] .team-btn.active {
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+
+html[data-theme="custom"] .input-group input:focus,
+html[data-theme="custom"] .form-group input:focus,
+html[data-theme="custom"] .form-group textarea:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
