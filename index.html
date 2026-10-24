@@ -10,7 +10,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Fredoka:wght@400;600&family=Teko:wght@500;700&family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
@@ -47,9 +47,14 @@
         <!-- TOP BAR -->
         <div class="top-bar">
           <div class="theme-actions">
-            <button class="btn theme-btn" data-theme-target="dark-minimal" title="Thème Dark">Dark</button>
+            <button class="btn theme-btn" data-theme-target="dark-minimal" title="Thème Sombre">Sombre</button>
             <button class="btn theme-btn" data-theme-target="parchment" title="Thème Parchemin">Parchemin</button>
             <button class="btn theme-btn" data-theme-target="cyber" title="Thème Cyber">Cyber</button>
+            <button class="btn theme-btn" data-theme-target="licorne" title="Thème Licorne">Licorne</button>
+            <button class="btn theme-btn" data-theme-target="licorne-nuit" title="Thème Licorne (nuit)">Licorne nuit</button>
+            <button class="btn theme-btn" data-theme-target="doom" title="Thème Doom">Doom</button>
+            <button class="btn theme-btn" data-theme-target="custom" title="Créer un thème personnalisé">Personnalisé</button>
+            <button class="btn theme-btn anim-toggle" id="anim-toggle-btn" aria-pressed="true" title="Activer/désactiver les animations">✨ Animations</button>
           </div>
           <button id="exit-visitor-btn-top" class="btn small primary hidden">Retour à mon profil</button>
           <button class="btn theme-btn" id="student-logout-btn" title="Se déconnecter">Déconnexion</button>
@@ -154,6 +159,10 @@
 
     </div>
 
+    <footer class="app-footer">
+      Application codée avec Claude d'Anthropic.
+    </footer>
+
     <!-- ====== POP-UP MODAL PROJET (DÉTAILS / ÉDITION / CRÉATION) ====== -->
     <div id="project-detail-modal" class="modal hidden">
       <div class="modal-content" id="project-modal-body">
@@ -194,6 +203,50 @@
           </div>
           <button type="submit" class="btn primary">Enregistrer</button>
         </form>
+      </div>
+    </div>
+
+    <!-- ====== MODAL THÈME PERSONNALISÉ ====== -->
+    <div id="custom-theme-modal" class="modal hidden">
+      <div class="modal-content">
+        <button type="button" class="close-modal close-custom-theme-modal" aria-label="Fermer">&times;</button>
+        <h2>Thème personnalisé</h2>
+        <p id="ct-visitor-note" class="counter hidden">Aperçu uniquement : le thème ne sera pas enregistré sur ce profil.</p>
+        <div class="ct-colors">
+          <div class="form-group ct-color">
+            <input type="color" id="ct-bg" />
+            <label for="ct-bg">Fond</label>
+          </div>
+          <div class="form-group ct-color">
+            <input type="color" id="ct-surface" />
+            <label for="ct-surface">Panneaux</label>
+          </div>
+          <div class="form-group ct-color">
+            <input type="color" id="ct-text" />
+            <label for="ct-text">Texte</label>
+          </div>
+          <div class="form-group ct-color">
+            <input type="color" id="ct-accent" />
+            <label for="ct-accent">Accent</label>
+          </div>
+          <div class="form-group ct-color">
+            <input type="color" id="ct-border" />
+            <label for="ct-border">Bordures</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="ct-font-title">Police des titres</label>
+          <select id="ct-font-title"></select>
+        </div>
+        <div class="form-group">
+          <label for="ct-font-main">Police du texte</label>
+          <select id="ct-font-main"></select>
+        </div>
+        <p id="ct-contrast-hint" class="ct-contrast-hint hidden"></p>
+        <div class="ct-actions">
+          <button type="button" id="ct-reset-btn" class="btn secondary">Réinitialiser</button>
+          <button type="button" id="ct-save-btn" class="btn primary">Enregistrer</button>
+        </div>
       </div>
     </div>
 

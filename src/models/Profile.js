@@ -8,5 +8,6 @@ export class Profile {
     this.interests = data.interests || [];
     this.objectif = data.objectif || "";
     this.theme = data.theme || "parchment";
+    this.customTheme = data.customTheme || null;
   }
 }

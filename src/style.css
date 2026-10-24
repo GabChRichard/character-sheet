@@ -2,7 +2,7 @@
    BASE — Feuille de Personnage v4
    ============================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Georgia&family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Georgia&family=Orbitron:wght@400;700&family=Fredoka:wght@400;600&family=Teko:wght@500;700&family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -63,6 +63,14 @@ a { color: var(--accent-color); }
 #app {
   max-width: 1080px;
   margin: 0 auto;
+}
+
+.app-footer {
+  max-width: 1080px;
+  margin: 24px auto 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 /* --- Utility --- */
@@ -305,7 +313,8 @@ a { color: var(--accent-color); }
 
 #student-alias {
   min-width: 0;
-  overflow-wrap: anywhere; /* fallback pour les longs noms sans _ ni - */
+  overflow-wrap: normal; /* coupure uniquement aux _ et - (via <wbr>, voir ProfileCard.js) */
+  word-break: normal;
 }
 
 #edit-profile-btn {
@@ -1011,4 +1020,300 @@ html[data-theme="minimal"] h2 {
 html[data-theme="minimal"] .level-card {
   background: #f0f0f0;
   border-color: #ccc;
+}
+
+/* ==============================
+   LICORNE THEMES (clair + nuit)
+   Animations désactivables via html[data-anim="off"]
+   ============================== */
+html[data-theme="licorne"] {
+  --bg-color:      #fdf4ff;
+  --surface-color: #ffffff;
+  --border-color:  #e9c9f5;
+  --text-main:     #3b2a4f;
+  --text-muted:    #7a6591;
+  --accent-color:  #a93fd1;
+  --accent-hover:  #8f2fb5;
+  --success-color: #1fa886;
+  --warning-color: #e8803f;
+  --gold-color:    #ffc83d;
+  --tag-bg:        #f6e3ff;
+  --font-main:     'Inter', sans-serif;
+  --font-title:    'Fredoka', 'Inter', sans-serif;
+  --licorne-sky:   linear-gradient(135deg, #ffd6f0 0%, #e3d4ff 50%, #d4f7ee 100%);
+  --licorne-title: linear-gradient(90deg, #e0449a, #a93fd1, #3d8fe0);
+  --licorne-mane:  linear-gradient(90deg, #ff7eb6, #c056e8, #6ec1ff, #3fc9a5, #ff7eb6);
+  --licorne-glow:  rgba(192, 86, 232, 0.2);
+  --licorne-spark: rgba(192, 86, 232, 0.55);
+  --licorne-spark2: rgba(255, 255, 255, 0.95);
+}
+
+html[data-theme="licorne-nuit"] {
+  --bg-color:      #120b24;
+  --surface-color: #1d1338;
+  --border-color:  #3d2a6b;
+  --text-main:     #f3e8ff;
+  --text-muted:    #b9a6da;
+  --accent-color:  #ff7eca;
+  --accent-hover:  #ff5bb8;
+  --success-color: #5eead4;
+  --warning-color: #ffb36b;
+  --gold-color:    #ffd86b;
+  --tag-bg:        #2a1d52;
+  --font-main:     'Inter', sans-serif;
+  --font-title:    'Fredoka', 'Inter', sans-serif;
+  --licorne-sky:   radial-gradient(ellipse at 15% 0%, rgba(255,126,202,0.22), transparent 55%),
+                   radial-gradient(ellipse at 90% 100%, rgba(110,193,255,0.18), transparent 55%),
+                   linear-gradient(160deg, #1a0f3a 0%, #120b24 55%, #0b1a2e 100%);
+  --licorne-title: linear-gradient(90deg, #ff7eca, #c9a0ff, #6ec1ff);
+  --licorne-mane:  linear-gradient(90deg, #ff7eca, #c9a0ff, #6ec1ff, #5eead4, #ff7eca);
+  --licorne-glow:  rgba(255, 126, 202, 0.25);
+  --licorne-spark: rgba(255, 216, 107, 0.9);
+  --licorne-spark2: rgba(180, 230, 255, 0.9);
+}
+
+html[data-theme^="licorne"] body {
+  background-image: var(--licorne-sky);
+  background-attachment: fixed;
+}
+
+/* Étincelles : deux calques de points qui scintillent */
+html[data-theme^="licorne"] body::before,
+html[data-theme^="licorne"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+html[data-theme^="licorne"] body::before {
+  background-image:
+    radial-gradient(circle, var(--licorne-spark) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, var(--licorne-spark2) 0 1px, transparent 2px);
+  background-size: 260px 260px, 170px 170px;
+  background-position: 30px 50px, 110px 20px;
+  opacity: 0.8;
+}
+html[data-theme^="licorne"] body::after {
+  background-image:
+    radial-gradient(circle, var(--licorne-spark2) 0 2px, transparent 3px),
+    radial-gradient(circle, var(--licorne-spark) 0 1px, transparent 2px);
+  background-size: 310px 310px, 220px 220px;
+  background-position: 150px 130px, 60px 160px;
+  opacity: 0.5;
+}
+
+html[data-theme^="licorne"] .panel {
+  border-radius: 16px;
+  border-top: 3px solid transparent;
+  border-image: none;
+  background-image: linear-gradient(var(--surface-color), var(--surface-color)), var(--licorne-mane);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: 0 6px 20px var(--licorne-glow);
+}
+
+html[data-theme^="licorne"] .login-box {
+  border-radius: 16px;
+  box-shadow: 0 6px 20px var(--licorne-glow);
+}
+
+html[data-theme^="licorne"] h1,
+html[data-theme^="licorne"] h2,
+html[data-theme^="licorne"] h3 {
+  background: var(--licorne-title);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+html[data-theme^="licorne"] .level-card {
+  background: linear-gradient(135deg, rgba(255,126,182,0.12), rgba(110,193,255,0.12));
+  border-radius: 14px;
+}
+
+html[data-theme^="licorne"] .level-bar-bg {
+  background-color: var(--tag-bg);
+}
+
+html[data-theme^="licorne"] .level-bar-fill {
+  background: var(--licorne-mane);
+  background-size: 200% 100%;
+}
+
+html[data-theme^="licorne"] .project-card {
+  background: var(--surface-color);
+  border-radius: 14px;
+}
+html[data-theme^="licorne"] .project-card:hover {
+  box-shadow: 0 6px 18px var(--licorne-glow);
+  transform: translateY(-3px);
+}
+
+html[data-theme^="licorne"] .btn {
+  border-radius: 999px;
+}
+html[data-theme="licorne"] .btn.primary {
+  color: #fff;
+}
+html[data-theme^="licorne"] .btn.theme-btn.active {
+  background: var(--tag-bg);
+}
+
+/* Animations (actives sauf si désactivées via le bouton) */
+@keyframes licorne-twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+@keyframes licorne-flow {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}
+
+html[data-theme^="licorne"]:not([data-anim="off"]) body::before {
+  animation: licorne-twinkle 3.5s ease-in-out infinite;
+}
+html[data-theme^="licorne"]:not([data-anim="off"]) body::after {
+  animation: licorne-twinkle 5s ease-in-out -2s infinite;
+}
+html[data-theme^="licorne"]:not([data-anim="off"]) h1,
+html[data-theme^="licorne"]:not([data-anim="off"]) h2,
+html[data-theme^="licorne"]:not([data-anim="off"]) h3 {
+  animation: licorne-flow 8s linear infinite;
+}
+html[data-theme^="licorne"]:not([data-anim="off"]) .level-bar-fill {
+  animation: licorne-flow 4s linear infinite;
+}
+
+/* Bouton on/off des animations (visible uniquement avec les thèmes licorne) */
+.btn.theme-btn.anim-toggle[aria-pressed="false"] {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+html:not([data-theme^="licorne"]) .anim-toggle { display: none; }
+
+/* ==============================
+   DOOM THEME
+   ============================== */
+html[data-theme="doom"] {
+  --bg-color:      #0d0807;
+  --surface-color: #1a1211;
+  --border-color:  #4a2a26;
+  --text-main:     #e8dcd6;
+  --text-muted:    #b09a92;
+  --accent-color:  #ff3b30;
+  --accent-hover:  #d42a20;
+  --success-color: #7ac143;
+  --warning-color: #ff9f1a;
+  --gold-color:    #ffb000;
+  --tag-bg:        #2b1816;
+  --radius:        2px;
+  --font-main:     'Inter', sans-serif;
+  --font-title:    'Teko', 'Inter', sans-serif;
+}
+
+html[data-theme="doom"] body {
+  background-image: none;
+}
+
+html[data-theme="doom"] .panel,
+html[data-theme="doom"] .login-box {
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--accent-color);
+  box-shadow: 0 0 18px rgba(255, 59, 48, 0.12) inset, 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme="doom"] h1,
+html[data-theme="doom"] h2,
+html[data-theme="doom"] h3 {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.55), 0 2px 0 #000;
+}
+html[data-theme="doom"] h2 {
+  font-size: 1.3rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+html[data-theme="doom"] .level-card {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.08), rgba(255, 140, 0, 0.12));
+}
+
+html[data-theme="doom"] .level-bar-bg {
+  background-color: #000;
+  border: 1px solid var(--border-color);
+}
+html[data-theme="doom"] .level-bar-fill {
+  background: linear-gradient(90deg, #7a0000, #ff3b30, #ff9f1a);
+  box-shadow: 0 0 10px rgba(255, 90, 0, 0.7);
+}
+
+html[data-theme="doom"] .project-card {
+  background: #130d0c;
+}
+html[data-theme="doom"] .project-card:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 14px rgba(255, 59, 48, 0.4);
+}
+
+html[data-theme="doom"] .btn {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+html[data-theme="doom"] .btn.theme-btn.active {
+  background: rgba(255, 59, 48, 0.15);
+}
+
+/* ==============================
+   THÈME PERSONNALISÉ (pop-up)
+   Les couleurs/polices sont posées en variables inline par customTheme.js
+   ============================== */
+.ct-colors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.form-group.ct-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.form-group.ct-color label {
+  margin-bottom: 0;
+}
+
+.ct-color input[type="color"] {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ct-color input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.ct-color input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+.ct-color input[type="color"]::-moz-color-swatch { border: none; border-radius: 50%; }
+
+.ct-contrast-hint {
+  font-size: 0.85rem;
+  color: var(--warning-color);
+  margin-bottom: 12px;
+}
+
+.ct-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .ct-colors { grid-template-columns: 1fr; }
 }

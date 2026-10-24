@@ -9,12 +9,14 @@ import { renderProjectGrid } from './components/student/ProjectGrid.js';
 import { renderBadgeWall } from './components/student/BadgeWall.js';
 import { renderLevelBar } from './components/student/LevelBar.js';
 import { renderSoftSkillsEditor } from './components/student/SoftSkillsEditor.js';
+import { openCustomThemeEditor } from './components/student/CustomThemeEditor.js';
 import { computeSkillScores, calculateGlobalScore } from './utils/scoreCalculator.js';
 import { resolveGlobalTitle } from './utils/titleResolver.js';
 import { startIdleLogout } from './utils/idleLogout.js';
 import { showToast } from './utils/notify.js';
 import { setupEscapeToClose } from './utils/modalEscape.js';
 import { createAuthFlow } from './utils/authFlow.js';
+import { applyCustomTheme, clearCustomTheme } from './utils/customTheme.js';
 import config from './data/config.json';
 
 startIdleLogout(db, 60 * 60 * 1000); // 1h d'inactivité
@@ -26,6 +28,7 @@ let myCode = '';
 let currentViewedCode = ''; // Code de l'étudiant visité (si mode visiteur)
 let lastProjects = [];
 let lastEndorsements = [];
+let lastCustomTheme = null; // config du thème personnalisé de la fiche affichée
 
 async function loadStudentData(code, isVisitor = false) {
   currentViewedCode = code;
@@ -40,6 +43,12 @@ async function loadStudentData(code, isVisitor = false) {
   }
 
   // Appliquer le thème stocké
+  lastCustomTheme = student.profile.customTheme || null;
+  if (student.profile.theme === 'custom') {
+    applyCustomTheme(lastCustomTheme);
+  } else {
+    clearCustomTheme();
+  }
   if (student.profile.theme) {
     document.documentElement.dataset.theme = student.profile.theme;
   }
@@ -141,6 +150,19 @@ function updateActiveThemeButton() {
 themeButtons.forEach(btn => {
   btn.addEventListener('click', async (e) => {
     const theme = e.currentTarget.dataset.themeTarget;
+
+    if (theme === 'custom') {
+      openCustomThemeEditor({
+        initial: lastCustomTheme,
+        canSave: currentViewedCode === myCode && !!myCode,
+        onSaved: (cfg) => { lastCustomTheme = cfg; },
+        onPreview: () => renderSkillRadar(lastProjects, lastEndorsements),
+        onClosed: updateActiveThemeButton
+      });
+      return;
+    }
+
+    clearCustomTheme();
     document.documentElement.dataset.theme = theme;
     updateActiveThemeButton();
     renderSkillRadar(lastProjects, lastEndorsements);
@@ -152,6 +174,26 @@ themeButtons.forEach(btn => {
   });
 });
 updateActiveThemeButton();
+
+// Animations des thèmes licorne (préférence locale, off par défaut si mouvement réduit)
+const animToggleBtn = document.getElementById('anim-toggle-btn');
+
+function setAnimations(enabled) {
+  document.documentElement.dataset.anim = enabled ? 'on' : 'off';
+  animToggleBtn?.setAttribute('aria-pressed', String(enabled));
+}
+
+let storedAnim = null;
+try { storedAnim = localStorage.getItem('licorne-anim'); } catch { /* stockage indisponible */ }
+setAnimations(storedAnim
+  ? storedAnim === 'on'
+  : !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+animToggleBtn?.addEventListener('click', () => {
+  const enable = document.documentElement.dataset.anim === 'off';
+  setAnimations(enable);
+  try { localStorage.setItem('licorne-anim', enable ? 'on' : 'off'); } catch { /* ignoré */ }
+});
 
 // Visiter un pair
 async function searchPeer() {

@@ -20,7 +20,10 @@ const THEME_COLORS = {
   'dark-minimal': { text: '#a1a1aa', grid: 'rgba(255,255,255,0.08)' },
   cyber:          { text: '#9fb3c8', grid: 'rgba(102,252,241,0.15)' },
   parchment:      { text: '#6b5c53', grid: 'rgba(0,0,0,0.08)' },
-  minimal:        { text: '#6b5c53', grid: 'rgba(0,0,0,0.08)' }
+  minimal:        { text: '#6b5c53', grid: 'rgba(0,0,0,0.08)' },
+  licorne:        { text: '#7a6591', grid: 'rgba(169,63,209,0.15)' },
+  'licorne-nuit': { text: '#b9a6da', grid: 'rgba(255,126,202,0.18)' },
+  doom:           { text: '#b09a92', grid: 'rgba(255,59,48,0.2)' }
 };
 
 export function renderSkillRadar(projects, endorsements) {
@@ -41,7 +44,12 @@ export function renderSkillRadar(projects, endorsements) {
   if (radarInstance) radarInstance.destroy();
 
   const theme = document.documentElement.dataset.theme || 'parchment';
-  const { text: textColor, grid: gridColor } = THEME_COLORS[theme] || THEME_COLORS.parchment;
+  let { text: textColor, grid: gridColor } = THEME_COLORS[theme] || THEME_COLORS.parchment;
+  if (theme === 'custom') {
+    const vars = getComputedStyle(document.documentElement);
+    textColor = vars.getPropertyValue('--text-muted').trim() || textColor;
+    gridColor = vars.getPropertyValue('--border-color').trim() || gridColor;
+  }
 
   radarInstance = new Chart(ctx, {
     type: 'radar',

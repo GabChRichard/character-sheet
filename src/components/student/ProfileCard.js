@@ -11,6 +11,44 @@ function renderAvatarInto(el, avatarUrl) {
   }
 }
 
+const MIN_ALIAS_FONT_PX = 13;
+
+// Réduit la police tant qu'un segment insécable (sans _ ni -) déborde ;
+// en dernier recours, autorise la coupure n'importe où.
+function fitAlias(el) {
+  el.style.fontSize = '';
+  el.style.overflowWrap = '';
+  if (!el.clientWidth) return; // panneau masqué : on réessaiera au prochain resize
+
+  let size = Number.parseFloat(getComputedStyle(el).fontSize);
+  while (el.scrollWidth > el.clientWidth && size > MIN_ALIAS_FONT_PX) {
+    size -= 1;
+    el.style.fontSize = `${size}px`;
+  }
+  if (el.scrollWidth > el.clientWidth) el.style.overflowWrap = 'anywhere';
+}
+
+let aliasObserver = null;
+
+function renderAlias(el, alias) {
+  if (!el) return;
+  // Permettre un retour à la ligne après chaque _ ou -
+  el.replaceChildren();
+  alias.split(/(?<=[_-])/).forEach((part, i) => {
+    if (i) el.append(document.createElement('wbr'));
+    el.append(part);
+  });
+  el.title = alias;
+  fitAlias(el);
+
+  const container = el.closest('.profile-identity');
+  if (!aliasObserver && container) {
+    // On observe le conteneur (pas le span) pour ne pas se re-déclencher via fontSize
+    aliasObserver = new ResizeObserver(() => fitAlias(el));
+    aliasObserver.observe(container);
+  }
+}
+
 export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   const aliasEl = document.getElementById('student-alias');
   const objectifEl = document.getElementById('student-objectif');
@@ -18,15 +56,7 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   const avatarEl = document.getElementById('student-avatar');
   const editProfileBtn = document.getElementById('edit-profile-btn');
 
-  if (aliasEl) {
-    // Permettre un retour à la ligne après chaque _ ou -
-    const alias = profile.alias || "Étudiant Anonyme";
-    aliasEl.replaceChildren();
-    alias.split(/(?<=[_-])/).forEach((part, i) => {
-      if (i) aliasEl.append(document.createElement('wbr'));
-      aliasEl.append(part);
-    });
-  }
+  renderAlias(aliasEl, profile.alias || "Étudiant Anonyme");
   if (objectifEl) objectifEl.innerText = profile.objectif ? `"${profile.objectif}"` : "Aucun objectif";
   renderAvatarInto(avatarEl, profile.avatarUrl);
 
