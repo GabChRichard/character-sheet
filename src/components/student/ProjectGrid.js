@@ -95,6 +95,8 @@ export function renderProjectGrid(projects, isOwner, visitorCode, currentStudent
     if (addProjectBtn) {
       // Nettoyer les anciens event listeners
       const newBtn = addProjectBtn.cloneNode(true);
+      // Ré-afficher le bouton (masqué lors de la visite d'un pair)
+      newBtn.style.display = '';
       addProjectBtn.parentNode.replaceChild(newBtn, addProjectBtn);
       newBtn.addEventListener('click', () => {
         renderProjectForm(null, onUpdate);

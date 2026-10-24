@@ -771,6 +771,23 @@ select option {
   font-weight: 600;
 }
 
+.team-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.team-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+.team-btn.active {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(179, 71, 38, 0.08);
+  font-weight: 600;
+}
+
 /* ==============================
    ANIMATIONS
    ============================== */
