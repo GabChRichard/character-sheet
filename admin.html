@@ -1,11 +1,18 @@
 <!-- admin.html v5.0 -->
 <!DOCTYPE html>
-<html lang="fr" data-theme="minimal">
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Character Sheet</title>
+  <script>
+    // Appliquer le thème mémorisé avant le rendu (évite un flash clair)
+    try {
+      const t = localStorage.getItem('admin-theme');
+      if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+    } catch (e) { /* stockage indisponible : on suit la préférence système */ }
+  </script>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/styles/base.css">
@@ -38,7 +45,10 @@
   <div id="admin-dashboard" class="admin-dashboard hidden">
     <header class="admin-header">
       <h1>Panneau d'administration</h1>
-      <button id="logout-btn" class="btn secondary">Déconnexion</button>
+      <div class="admin-header-actions">
+        <button type="button" id="theme-toggle-btn" class="btn theme-toggle" title="Basculer le thème" aria-label="Basculer le thème">🌙</button>
+        <button id="logout-btn" class="btn secondary">Déconnexion</button>
+      </div>
     </header>
 
     <div class="admin-grid">
@@ -55,7 +65,7 @@
 
           <!-- FORMULAIRE AJOUT ÉTUDIANT INLINE (V5) -->
           <div id="new-student-inline-container" class="hidden"
-            style="padding: 10px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: var(--radius);">
+            style="padding: 10px; background: var(--subtle-bg); border: 1px solid var(--border-color); border-radius: var(--radius);">
             <form id="new-student-inline-form" style="display: flex; flex-direction: column; gap: 8px;">
               <label for="new-stu-github" class="sr-only">Username GitHub</label>
               <input type="text" id="new-stu-github" placeholder="Username GitHub (ex: octocat)" required

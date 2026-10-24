@@ -303,6 +303,15 @@ a { color: var(--accent-color); }
   gap: 6px;
 }
 
+#student-alias {
+  min-width: 0;
+  overflow-wrap: anywhere; /* fallback pour les longs noms sans _ ni - */
+}
+
+#edit-profile-btn {
+  flex-shrink: 0;
+}
+
 .objectif {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -577,8 +586,8 @@ a { color: var(--accent-color); }
 
 .project-value {
   color: var(--accent-color);
-  letter-spacing: 2px;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .project-valid-icon {

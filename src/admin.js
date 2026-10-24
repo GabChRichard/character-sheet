@@ -94,6 +94,30 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => {
   window.location.reload();
 });
 
+// Thème clair / sombre (préférence système par défaut, choix mémorisé)
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+function getEffectiveTheme() {
+  const explicit = document.documentElement.dataset.theme;
+  if (explicit === 'dark' || explicit === 'light') return explicit;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function updateThemeToggleIcon() {
+  if (themeToggleBtn) themeToggleBtn.textContent = getEffectiveTheme() === 'dark' ? '☀️' : '🌙';
+}
+
+themeToggleBtn?.addEventListener('click', () => {
+  const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem('admin-theme', next);
+  } catch (e) { /* stockage indisponible : le choix ne sera pas mémorisé */ }
+  updateThemeToggleIcon();
+});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeToggleIcon);
+updateThemeToggleIcon();
+
 // Événement recherche (debounce pour éviter de re-render à chaque frappe)
 let searchDebounceTimer = null;
 document.getElementById('search-student')?.addEventListener('input', (e) => {
@@ -262,7 +286,7 @@ function renderStudentProjectsAndSkills(studentCode) {
     div.style.display = 'flex';
     div.style.justifyContent = 'space-between';
     div.style.padding = '5px 8px';
-    div.style.background = 'rgba(0,0,0,0.01)';
+    div.style.background = 'var(--subtle-bg)';
     div.style.borderBottom = '1px dashed var(--border-color)';
     div.style.fontSize = '0.85rem';
     div.innerHTML = `<span>${sk.icon} ${sk.label}</span><strong>${score} pts</strong>`;
@@ -277,7 +301,7 @@ function renderStudentProjectsAndSkills(studentCode) {
     projs.forEach(p => {
       const div = document.createElement('div');
       div.style.padding = '8px 10px';
-      div.style.background = 'rgba(0,0,0,0.02)';
+      div.style.background = 'var(--subtle-bg)';
       div.style.border = '1px solid var(--border-color)';
       div.style.borderRadius = 'var(--radius)';
       div.style.fontSize = '0.85rem';

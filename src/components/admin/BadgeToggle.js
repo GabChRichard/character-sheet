@@ -32,7 +32,7 @@ export function renderBadgeToggles(studentBadges, adminRole) {
       card.style.alignItems = 'center';
       card.style.gap = '10px';
       card.style.padding = '8px 12px';
-      card.style.background = 'rgba(0,0,0,0.02)';
+      card.style.background = 'var(--subtle-bg)';
       card.style.border = '1px solid var(--border-color)';
       card.style.borderRadius = 'var(--radius)';
       card.style.cursor = canGrant ? 'pointer' : 'not-allowed';

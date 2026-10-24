@@ -18,7 +18,15 @@ export function renderProfileCard(profile, isOwner = true, onUpdate = null) {
   const avatarEl = document.getElementById('student-avatar');
   const editProfileBtn = document.getElementById('edit-profile-btn');
 
-  if (aliasEl) aliasEl.innerText = profile.alias || "Étudiant Anonyme";
+  if (aliasEl) {
+    // Permettre un retour à la ligne après chaque _ ou -
+    const alias = profile.alias || "Étudiant Anonyme";
+    aliasEl.replaceChildren();
+    alias.split(/(?<=[_-])/).forEach((part, i) => {
+      if (i) aliasEl.append(document.createElement('wbr'));
+      aliasEl.append(part);
+    });
+  }
   if (objectifEl) objectifEl.innerText = profile.objectif ? `"${profile.objectif}"` : "Aucun objectif";
   renderAvatarInto(avatarEl, profile.avatarUrl);
 

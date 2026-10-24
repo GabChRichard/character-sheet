@@ -1,7 +1,8 @@
 // src/components/student/ProjectGrid.js
 import { openProjectModal } from './ProjectModal.js';
 import { renderProjectForm } from './ProjectForm.js';
-import { skillsIndex, getSkillId, getSkillHours } from '../../utils/skillsIndex.js';
+import { getSkillHours } from '../../utils/skillsIndex.js';
+import { resolveEndorsementPoints } from '../../utils/scoreCalculator.js';
 import { EndorsementService } from '../../services/EndorsementService.js';
 import { showToast } from '../../utils/notify.js';
 
@@ -116,12 +117,12 @@ function createProjectCard(proj, isPinned, visitorCode, isOwner, endorsements, o
   const rawWeight = (proj.skills || []).reduce((sum, s) => sum + getSkillHours(s), 0);
   // Un projet en équipe vaut 25% moins de points affichés sur la carte —
   // le score de compétences (scoreCalculator.js) n'est lui jamais réduit.
-  const weight = Math.round(rawWeight * (proj.team ? 0.75 : 1));
-  // Un dot par catégorie de hard skills mobilisée par le projet (5 catégories = 5 dots max)
-  const categoryCount = new Set(
-    (proj.skills || []).map(s => skillsIndex[getSkillId(s)]?.categoryId).filter(Boolean)
-  ).size;
-  const dots = "●".repeat(categoryCount);
+  const hoursWeight = Math.round(rawWeight * (proj.team ? 0.75 : 1));
+  // Les endossements reçus valorisent le projet : on affiche leur apport réel
+  // au score (bonus par compétence × nombre de compétences), sans réduction équipe.
+  const endorsementCount = (endorsements || []).filter(e => e.project_id === proj.id).length;
+  const endorsementPoints = resolveEndorsementPoints(endorsementCount) * (proj.skills || []).length;
+  const weight = hoursWeight + endorsementPoints;
 
   const thumbnail = proj.thumbnail_url
     ? `<div class="project-thumbnail" style="background-image: url('${proj.thumbnail_url}');"></div>`
@@ -132,7 +133,7 @@ function createProjectCard(proj, isPinned, visitorCode, isOwner, endorsements, o
     <div class="project-name">${proj.name}</div>
     <div class="project-course">${proj.course || 'Projet'} ${proj.team ? '· 👥 Équipe' : '· 🧍 Solo'}</div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-      <div class="project-value" title="${categoryCount} catégorie(s) de compétences">${dots}</div>
+      <div class="project-value" title="${endorsementCount} endossement(s) · +${endorsementPoints} pts">👍 ${endorsementCount}</div>
       <span class="project-points" style="font-size: 0.8rem; color: var(--text-muted);">${weight} pts</span>
     </div>
   `;
